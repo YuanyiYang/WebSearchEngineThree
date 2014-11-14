@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -236,4 +237,18 @@ class IndexerFullScan extends Indexer implements Serializable {
     return retval;
   }
 
+  @Override
+  public double getDocumentSize(int docId) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public List<Document> getAllDocuments(Query query) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public void buildInvertMap(Query query) {
+  }
 }

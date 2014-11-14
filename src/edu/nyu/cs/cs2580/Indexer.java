@@ -1,6 +1,8 @@
 package edu.nyu.cs.cs2580;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Vector;
 
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
@@ -150,4 +152,100 @@ public abstract class Indexer {
       return null;
     }
   }
+  // decide whether a character is a letter or number
+  public boolean isCharacterNumber(char c) {
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9')) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // tokenizer for the input string
+  public Vector<String> Tokenization(String s) {
+    Vector<String> r = new Vector<String>();
+    if (s.length() == 0) {
+      return r;
+    }
+    int decide = 0;
+    StringBuilder sb = new StringBuilder();
+
+    int id = 0;
+    while (id < s.length() && s.charAt(id) < 128
+        && !isCharacterNumber(s.charAt(id))) {
+      id++;
+    }
+
+    if (id != s.length()) {
+      if (s.charAt(id) < 128) { // ASC code
+        decide = 0;
+        sb.append(s.charAt(id));
+      } else { // n-ASC code
+        r.add("" + s.charAt(id));
+        decide = 1;
+      }
+    } else {
+      return r;
+    }
+
+    for (int i = id + 1; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (!isCharacterNumber(c) && c < 128) { // if there is a punctuation here
+        String s_temp = new String(sb);
+        if (s_temp.length() != 0) {
+          r.add(s_temp);
+        }
+        sb.delete(0, sb.capacity());
+        decide = 0;
+        continue;
+      }
+      if (c < 128 && isCharacterNumber(c)) { // ASCII code
+        sb.append(c);
+        decide = 0;
+      } else { // n-ASCII code
+        if (decide == 0) {
+          r.add(new String(sb));
+          r.add("" + c);
+          sb.delete(0, sb.capacity());
+        } else {
+          r.add("" + c);
+        }
+        decide = 1;
+      }
+    }
+
+    String s_temp = new String(sb);
+    if (s_temp.length() != 0) {
+      r.add(s_temp);
+    }
+
+    return r;
+  }
+
+  /**
+   * Return the number of words in the particular document identified by the
+   * docId
+   * 
+   * @param docId
+   * @return -1 if the document not exists
+   */
+  public abstract double getDocumentSize(int docId);
+
+  /**
+   * Given a query, return all the hit documents. Query could be the subclass
+   * {@link QueryPhrase} and Document could be the subclass
+   * {@link DocumentIndexed}. Retrieve term features of the documents.
+   * 
+   * @param query
+   * @return a list of Document; null if such documents not exist
+   */
+  public abstract List<Document> getAllDocuments(Query query);
+
+  /**
+   * Before the nextDoc method is executed, the ranker should call this method first to make 
+   * index load the posting list of all words in the query into memory
+   * @param query
+   */
+  public abstract void buildInvertMap(Query query);
 }

@@ -10,4 +10,22 @@ public class DocumentIndexed extends Document {
   public DocumentIndexed(int docid) {
     super(docid);
   }
+  
+  /*
+   * //Basic information for display protected String _title = ""; protected
+   * String _url = "";
+   * 
+   * // Basic information for ranking protected float _pageRank = 0.0f;
+   * protected int _numViews = 0;
+   */
+
+  private double body_freq;
+
+  public void setBodyFrequency(int bf) {
+    body_freq = (double) bf;
+  }
+
+  public double getBodyFrequency() {
+    return body_freq;
+  }
 }

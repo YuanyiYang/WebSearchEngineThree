@@ -20,15 +20,20 @@ public class Query {
   public Query(String query) {
     _query = query;
   }
-
+ 
   public void processQuery() {
     if (_query == null) {
       return;
     }
+    _tokens = new Vector<String>();
     Scanner s = new Scanner(_query);
     while (s.hasNext()) {
       _tokens.add(s.next());
     }
     s.close();
+  }
+
+  public Vector<String> getTokens() {
+    return _tokens;
   }
 }
