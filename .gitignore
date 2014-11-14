@@ -1,0 +1,10 @@
+/bin
+/results
+*.tsv
+*.class
+.DS_Store
+/.settings
+
+# Package Files #
+*.war
+*.ear
