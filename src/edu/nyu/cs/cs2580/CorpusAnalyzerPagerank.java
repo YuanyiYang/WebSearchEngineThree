@@ -1,6 +1,11 @@
 package edu.nyu.cs.cs2580;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
@@ -8,6 +13,10 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
  * @CS2580: Implement this class for HW3.
  */
 public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
+  
+  private Map<String, Integer> urlToDocId = new HashMap<String, Integer>();
+  private MaP<Integer,>
+  
   public CorpusAnalyzerPagerank(Options options) {
     super(options);
   }
@@ -34,7 +43,26 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   @Override
   public void prepare() throws IOException {
     System.out.println("Preparing " + this.getClass().getName());
+    String directoryPath = null;       // need to update
+    String destinationPartialPath = null;
+    List<File> files = new ArrayList<File>();
+    try{
+      files = getFilesUnderDirectory(directoryPath);
+    } catch (IOException e){
+      System.err.println(e.getMessage());
+      e.printStackTrace();
+    }  
+    WriteToFile writer = new WriteToFile(destinationPartialPath);
+    for(int docId = 0; docId<files.size(); docId++){
+      buildOneDoc(files.get(docId), docId, writer);
+    }
+    writer.closeBufferWriter();
     return;
+  }
+  
+  private void buildOneDoc(File file, int docId, WriteToFile writer) throws IOException{
+    HeuristicLinkExtractor linkExtractor = new HeuristicLinkExtractor(file);
+    
   }
 
   /**
@@ -66,5 +94,25 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   public Object load() throws IOException {
     System.out.println("Loading using " + this.getClass().getName());
     return null;
+  }
+  
+  private List<File> getFilesUnderDirectory(String directoryPath)
+      throws IOException {
+    File root = new File(directoryPath);
+    List<File> files = new ArrayList<File>();
+    if (!root.isDirectory()) {
+      throw new IOException("The corpus path " + directoryPath
+          + " is not a directory!");
+    } else {
+      File[] subfiles = root.listFiles();
+      for (File f : subfiles) {
+        if (!f.isDirectory()) {
+          files.add(f);
+        } else {
+          files.addAll(getFilesUnderDirectory(f.getAbsolutePath()));
+        }
+      }
+    }
+    return files;
   }
 }
