@@ -47,16 +47,16 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   static public List<List<Integer>> prGraph = 
                   new ArrayList<List<Integer>>(); //the inlink
   static public List<Integer> outlink = new ArrayList<Integer>();  //the outlink num
-  static public List<Double> pr = new ArrayList<Double>();
+  static public List<Float> pr = new ArrayList<Float>();
   
   private static final String WORKINGDIR = System.getProperty("user.dir");
   private static final String prFile = "";   //page rank value file 
   private static final String fileloc = "";  //the location of the wiki text
-  private double gamma;  //0.1   0.9
+  private float gamma;  //0.1   0.9
   private int iteration; //1     2
   
   //set the text file location, iteration times, gamma value
-  public void setRunEnv(int iteration, double gamma) {
+  public void setRunEnv(int iteration, float gamma) {
     this.gamma = gamma;
     this.iteration = iteration;
   }
@@ -85,14 +85,14 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
     System.out.println("Computing using " + this.getClass().getName());
     
     for (int i = 0; i < pageIndex.keySet().size(); i++) {
-      pr.add(1.0);
+      pr.add(1.0f);
     }
     
     for (int i = 0; i < iteration; i++) {
       for (int j = 0; j < pr.size(); j++) {
-        double temp = 0.0;
+        float temp = 0.0f;
         for (Integer docurl: prGraph.get(j)) { //the inlinks of this page
-          temp += (pr.get(docurl) / (double)outlink.get(docurl));
+          temp += (pr.get(docurl) / (float)outlink.get(docurl));
         }
         pr.set(j, (1 - gamma) + gamma * temp);
       }
@@ -130,7 +130,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
     output.write("\n");
     
     //write the page rank value for each document
-    for (Double prValue: pr) {
+    for (Float prValue: pr) {
       output.write(prValue.toString() + " ");
     }
     
@@ -185,8 +185,8 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
     //load the page rank value for each docurl
     line = br.readLine();
     s = new Scanner(line);
-    while (s.hasNextDouble()) {
-      pr.add(s.nextDouble());
+    while (s.hasNextFloat()) {
+      pr.add(s.nextFloat());
     }
     
     br.close();
