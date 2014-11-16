@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
 /**
  * @CS2580: Implement this class for HW2.
  */
-public class IndexerInvertedDoconly extends Indexer {
+public class IndexerInvertedDoconly extends Indexer implements Serializable {
 
   private static final long serialVersionUID = -8386259220360593185L;
   private final String PARTS = "/parts/";
