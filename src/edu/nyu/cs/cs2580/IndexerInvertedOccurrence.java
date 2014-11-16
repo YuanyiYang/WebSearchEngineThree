@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
 /**
  * @CS2580: Implement this class for HW2.
  */
-public class IndexerInvertedOccurrence extends Indexer {
+public class IndexerInvertedOccurrence extends Indexer implements Serializable {
 
   private final String WORKINGDIR = System.getProperty("user.dir");
   private final String PARTS = "/parts/";
