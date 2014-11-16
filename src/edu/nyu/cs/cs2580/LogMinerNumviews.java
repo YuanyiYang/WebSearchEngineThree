@@ -1,6 +1,9 @@
 package edu.nyu.cs.cs2580;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
@@ -8,7 +11,10 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
  * @CS2580: Implement this class for HW3.
  */
 public class LogMinerNumviews extends LogMiner {
-
+  private final String WORKINGDIR = System.getProperty("user.dir");
+  private final String fileloc = "";
+  private final String nvFile = "";  //the location of numviews file
+  
   public LogMinerNumviews(Options options) {
     super(options);
   }
@@ -29,6 +35,14 @@ public class LogMinerNumviews extends LogMiner {
   @Override
   public void compute() throws IOException {
     System.out.println("Computing using " + this.getClass().getName());
+    BufferedReader br = 
+        new BufferedReader(new InputStreamReader(new FileInputStream(fileloc)));
+    
+    String line;
+    while ((line = br.readLine()) != null) {
+      
+    }
+    
     return;
   }
 
