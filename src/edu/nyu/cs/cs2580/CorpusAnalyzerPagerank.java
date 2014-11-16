@@ -145,51 +145,56 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
    * @throws IOException
    */
   @Override
-  public Object load() throws IOException {
+  public List<Float> load() throws IOException {
     System.out.println("Loading using " + this.getClass().getName());
-    BufferedReader br = 
-        new BufferedReader(new InputStreamReader(new FileInputStream(prFile)));
-      
-    int size = Integer.parseInt(br.readLine());
-    int temp = 1;
-      
-    //load the docurl <-> id map
-    for (int i = 0; i < size; i++) {
-      String key = br.readLine();
-      pageIndex.put(key, temp);
-      temp ++;
-    }
-      
-    //load the graph 
-    for (int i = 0; i < size; i++) {
-      List<Integer> list = new ArrayList<Integer>();
-      String line = br.readLine();
-      Scanner s = new Scanner(line);
-      
-      while (s.hasNextInt()) {
-        list.add(s.nextInt());
+    
+    if (pr.size() != 0) {  //the PageRank value has been loaded
+      return pr;
+    } else {   //if the PageRank value has not been loaded
+      BufferedReader br = 
+          new BufferedReader(new InputStreamReader(new FileInputStream(prFile)));
+        
+      int size = Integer.parseInt(br.readLine());
+      int temp = 1;
+        
+      //load the docurl <-> id map
+      for (int i = 0; i < size; i++) {
+        String key = br.readLine();
+        pageIndex.put(key, temp);
+        temp ++;
+      }
+        
+      //load the graph 
+      for (int i = 0; i < size; i++) {
+        List<Integer> list = new ArrayList<Integer>();
+        String line = br.readLine();
+        Scanner s = new Scanner(line);
+        
+        while (s.hasNextInt()) {
+          list.add(s.nextInt());
+        }
+        
+        prGraph.add(list);
+        s.close();
       }
       
-      prGraph.add(list);
+      //load the outlinks
+      String line = br.readLine();
+      Scanner s = new Scanner(line);
+      while (s.hasNextInt()) {
+        outlink.add(s.nextInt());
+      }
       s.close();
+      
+      //load the page rank value for each docurl
+      line = br.readLine();
+      s = new Scanner(line);
+      while (s.hasNextFloat()) {
+        pr.add(s.nextFloat());
+      }
+      
+      br.close();
+      return pr;      
     }
-    
-    //load the outlinks
-    String line = br.readLine();
-    Scanner s = new Scanner(line);
-    while (s.hasNextInt()) {
-      outlink.add(s.nextInt());
-    }
-    s.close();
-    
-    //load the page rank value for each docurl
-    line = br.readLine();
-    s = new Scanner(line);
-    while (s.hasNextFloat()) {
-      pr.add(s.nextFloat());
-    }
-    
-    br.close();
-    return null;
   }
 }

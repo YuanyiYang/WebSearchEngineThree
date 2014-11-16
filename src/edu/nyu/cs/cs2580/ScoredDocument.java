@@ -30,7 +30,7 @@ class ScoredDocument implements Comparable<ScoredDocument> {
     return "";
   }
   
-  public Document getDoc() {
+  public Document getDocument() {
     return this._doc;
   }
   
