@@ -27,7 +27,7 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
 public class PRTest extends CorpusAnalyzer {
 
   private final String WORKINGDIR = System.getProperty("user.dir");
-  private final String PR_File = WORKINGDIR + "/data/index"; // page rank value
+  private final String PR_FILE = WORKINGDIR + "/data/index/prResult"; // page rank value
                                                              // file
   private final String CORPUS_LOC = WORKINGDIR + "/data/wiki"; // the location
                                                                // of the wiki
@@ -111,7 +111,8 @@ public class PRTest extends CorpusAnalyzer {
       int outLinks = Integer.parseInt(reader.readLine());
       while (outLinks > 0) {
         String outLink = reader.readLine();
-        if (!pageIndex.keySet().contains(outLink)) {
+        outLinks--;
+        if (!pageIndex.keySet().contains(outLink)) {       
           continue;
         }
         int i = pageIndex.get(outLink);
@@ -129,7 +130,6 @@ public class PRTest extends CorpusAnalyzer {
           matrix.put(j, 1);
         }
         _prGraph.put(i, matrix);
-        outLinks--;
       }
       _outLinks.put(j, validOutLinkNum);
     }
@@ -178,6 +178,7 @@ public class PRTest extends CorpusAnalyzer {
    */
   @Override
   public void compute() throws IOException {
+    setRunEnv(1, 0.9f);
     System.out.println("Computing using " + this.getClass().getName());
     for (int i = 0; i < pageIndex.keySet().size(); i++) {
       pr.add(1.0f);
@@ -185,6 +186,10 @@ public class PRTest extends CorpusAnalyzer {
     for (int i = 0; i < iteration; i++) {
       for (int j = 0; j < pr.size(); j++) {
         float temp = 0.0f;
+        if(!_prGraph.containsKey(j)){
+          pr.set(j, (1-gamma));
+          continue;
+        }
         // docURI -> outLink _prGraph.get(i) ==> map<j,numLink> j points to i
         for (Map.Entry<Integer, Integer> entry : _prGraph.get(j).entrySet()) {
           int formDocId = entry.getKey();
@@ -203,7 +208,7 @@ public class PRTest extends CorpusAnalyzer {
 
   // write the page rank value to the file
   public void writeToFile() throws IOException {
-    WriteToFile writer = new WriteToFile(PR_File);
+    WriteToFile writer = new WriteToFile(PR_FILE);
     StringBuilder result = new StringBuilder();
     Integer size = pageIndex.keySet().size();
     result.append(size);
@@ -232,13 +237,14 @@ public class PRTest extends CorpusAnalyzer {
     Map<String, Float> prResult = new HashMap<String, Float>();
     if (pr == null || pr.size() == 0) {
       BufferedReader br = new BufferedReader(new InputStreamReader(
-          new FileInputStream(PR_File)));
+          new FileInputStream(PR_FILE)));
       int size = Integer.parseInt(br.readLine());
       String content = null;
       while((content=br.readLine())!=null){
         float prValue = Float.parseFloat(br.readLine());
         prResult.put(content, prValue);
       }
+      br.close();
     } else {
       try{
         throw new IllegalStateException("The PR value is in the class");
@@ -267,9 +273,5 @@ public class PRTest extends CorpusAnalyzer {
       }
     }
     return files;
-  }
-
-  public static void main(String[] args) {
-
   }
 }

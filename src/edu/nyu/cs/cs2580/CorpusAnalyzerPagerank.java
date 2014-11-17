@@ -1,22 +1,16 @@
 package edu.nyu.cs.cs2580;
 
-import java.io.File;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
@@ -26,10 +20,9 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
 public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
   private final String WORKINGDIR = System.getProperty("user.dir");
-  private final String prFile = ""; // page rank value file
-  private final String CORPUS_LOC = WORKINGDIR + "/data/wiki"; // the location
-                                                               // of the wiki
-                                                               // text
+  // PageRank result
+  private final String PR_FILE = WORKINGDIR + "/data/index/prResult";
+  private final String CORPUS_LOC = WORKINGDIR + "/data/wiki";
   private final String PARTIAL_PRFILE = WORKINGDIR + "/parts/PartialPRGraph";
   private float gamma; // 0.1 0.9
   private int iteration; // 1 2
@@ -37,18 +30,25 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   public Map<String, Integer> pageIndex = new LinkedHashMap<String, Integer>();
 
   // _prGraph.get(i) ==> map<j,numLink> represents how many link(numLink)
-  // document j
-  // has that points to document i
+  // document j has that points to document i
   public Map<Integer, Map<Integer, Integer>> _prGraph = new HashMap<Integer, Map<Integer, Integer>>();
 
   // num = outLink.get(i) represent how many outgoinglink i has
-  public List<Integer> _outLinks = new ArrayList<Integer>();
+  public Map<Integer, Integer> _outLinks = new HashMap<Integer, Integer>();
 
-  public Map<String, Float> _pr = new HashMap<String, Float>();
   public List<Float> pr = new ArrayList<Float>();
 
   public CorpusAnalyzerPagerank(Options options) {
     super(options);
+  }
+
+  public CorpusAnalyzerPagerank() {
+  }
+
+  // set the text file location, iteration times, gamma value
+  public void setRunEnv(int iteration, float gamma) {
+    this.gamma = gamma;
+    this.iteration = iteration;
   }
 
   /**
@@ -70,17 +70,6 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
    * 
    * @throws IOException
    */
-
-  // public List<List<Integer>> prGraph = new ArrayList<List<Integer>>(); // the
-  // // inlink
-  // public List<Integer> outlink = new ArrayList<Integer>(); // the outlink num
-
-  // set the text file location, iteration times, gamma value
-  public void setRunEnv(int iteration, float gamma) {
-    this.gamma = gamma;
-    this.iteration = iteration;
-  }
-
   @Override
   public void prepare() throws IOException {
     System.out.println("Preparing " + this.getClass().getName());
@@ -92,6 +81,10 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       e.printStackTrace();
     }
     WriteToFile writer = new WriteToFile(PARTIAL_PRFILE);
+    File partialFile = new File(PARTIAL_PRFILE);
+    if (partialFile.exists()) {
+      partialFile.delete();
+    }
     for (int docId = 0; docId < files.size(); docId++) {
       if (!isValidDocument(files.get(docId))) {
         continue;
@@ -112,6 +105,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       int outLinks = Integer.parseInt(reader.readLine());
       while (outLinks > 0) {
         String outLink = reader.readLine();
+        outLinks--;
         if (!pageIndex.keySet().contains(outLink)) {
           continue;
         }
@@ -131,10 +125,9 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
         }
         _prGraph.put(i, matrix);
       }
-      _outLinks.add(validOutLinkNum);
+      _outLinks.put(j, validOutLinkNum);
     }
     reader.close();
-    File partialFile = new File(PARTIAL_PRFILE);
     if (partialFile.exists()) {
       partialFile.delete();
     }
@@ -178,6 +171,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
    */
   @Override
   public void compute() throws IOException {
+    setRunEnv(1, 0.9f);
     System.out.println("Computing using " + this.getClass().getName());
     for (int i = 0; i < pageIndex.keySet().size(); i++) {
       pr.add(1.0f);
@@ -185,53 +179,44 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
     for (int i = 0; i < iteration; i++) {
       for (int j = 0; j < pr.size(); j++) {
         float temp = 0.0f;
-        for (Map.Entry<Integer, Integer> entry : _prGraph.get(j).entrySet()) {
-          
+        float gammaTemp = 0.0f;
+        // compute random page rank value
+        for (int k = 0; k < pr.size(); k++) {
+          temp += pr.get(k) / pr.size();
         }
-        // for (Integer docurl : prGraph.get(j)) { // the inlinks of this page
-        // temp += (pr.get(docurl) / (float) outlink.get(docurl));
-        // }
-        pr.set(j, (1 - gamma) + gamma * temp);
+        // if other document points to this document
+        if (_prGraph.containsKey(j)) {
+          // docURI -> outLink _prGraph.get(i) ==> map<j,numLink> j points to i
+          for (Map.Entry<Integer, Integer> entry : _prGraph.get(j).entrySet()) {
+            int formDocId = entry.getKey();
+            float outLinkNum = (float) _outLinks.get(formDocId);
+            gammaTemp += entry.getValue() * pr.get(formDocId) / outLinkNum;
+          }
+        }
+        pr.set(j, (1 - gamma) * temp + gamma * gammaTemp);
       }
     }
-
     writeToFile();
     return;
   }
 
   // write the page rank value to the file
   public void writeToFile() throws IOException {
-    OutputStreamWriter output = new OutputStreamWriter(new FileOutputStream(
-        prFile, false));
+    WriteToFile writer = new WriteToFile(PR_FILE);
+    StringBuilder result = new StringBuilder();
     Integer size = pageIndex.keySet().size();
-    output.write(size.toString() + "\n");
-
-    // write the document url as the order in the index
-    // the whole line as the key
-    for (String key : pageIndex.keySet()) {
-      output.write(key + "\n");
+    result.append(size);
+    result.append('\n');
+    writer.appendToFile(result.toString());
+    for (Map.Entry<String, Integer> entry : pageIndex.entrySet()) {
+      result = new StringBuilder();
+      result.append(entry.getKey());
+      result.append('\n');
+      result.append(pr.get(entry.getValue()));
+      result.append('\n');
+      writer.appendToFile(result.toString());
     }
-
-    // write the built graph into the file
-    for (List<Integer> list : prGraph) {
-      for (Integer i : list) {
-        output.write(i.toString() + " ");
-      }
-      output.write("\n");
-    }
-
-    // write the number of outlinks
-    for (Integer i : outlink) {
-      output.write(i.toString() + " ");
-    }
-    output.write("\n");
-
-    // write the page rank value for each document
-    for (Float prValue : pr) {
-      output.write(prValue.toString() + " ");
-    }
-
-    output.close();
+    writer.closeBufferWriter();
   }
 
   /**
@@ -241,57 +226,27 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
    * @throws IOException
    */
   @Override
-  public List<Float> load() throws IOException {
+  public Map<String, Float> load() throws IOException {
     System.out.println("Loading using " + this.getClass().getName());
-
-    if (pr.size() != 0) { // the PageRank value has been loaded
-      return pr;
-    } else { // if the PageRank value has not been loaded
+    Map<String, Float> prResult = new HashMap<String, Float>();
+    if (pr == null || pr.size() == 0) {
       BufferedReader br = new BufferedReader(new InputStreamReader(
-          new FileInputStream(prFile)));
-
+          new FileInputStream(PR_FILE)));
       int size = Integer.parseInt(br.readLine());
-      int temp = 1;
-
-      // load the docurl <-> id map
-      for (int i = 0; i < size; i++) {
-        String key = br.readLine();
-        pageIndex.put(key, temp);
-        temp++;
+      String content = null;
+      while ((content = br.readLine()) != null) {
+        float prValue = Float.parseFloat(br.readLine());
+        prResult.put(content, prValue);
       }
-
-      // load the graph
-      for (int i = 0; i < size; i++) {
-        List<Integer> list = new ArrayList<Integer>();
-        String line = br.readLine();
-        Scanner s = new Scanner(line);
-
-        while (s.hasNextInt()) {
-          list.add(s.nextInt());
-        }
-
-        prGraph.add(list);
-        s.close();
-      }
-
-      // load the outlinks
-      String line = br.readLine();
-      Scanner s = new Scanner(line);
-      while (s.hasNextInt()) {
-        outlink.add(s.nextInt());
-      }
-      s.close();
-
-      // load the page rank value for each docurl
-      line = br.readLine();
-      s = new Scanner(line);
-      while (s.hasNextFloat()) {
-        pr.add(s.nextFloat());
-      }
-
       br.close();
-      return pr;
+    } else {
+      try {
+        throw new IllegalStateException("The PR value is in the class");
+      } catch (IllegalStateException ie) {
+        ie.printStackTrace();
+      }
     }
+    return prResult;
   }
 
   private List<File> getFilesUnderDirectory(String directoryPath)
@@ -312,9 +267,5 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       }
     }
     return files;
-  }
-
-  public static void main(String[] args) {
-
   }
 }
