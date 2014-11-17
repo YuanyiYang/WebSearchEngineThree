@@ -35,10 +35,8 @@ public class Spearman {
 
     @Override
     public int compareTo(kvpair kvp) {
-      if (this.value < kvp.value) {
+      if (this.value <= kvp.value) {
         return 1;
-      } else if (this.value == kvp.value) {
-        return 0;
       } else {
         return -1;
       }

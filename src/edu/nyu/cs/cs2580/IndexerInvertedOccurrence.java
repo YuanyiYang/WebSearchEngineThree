@@ -58,7 +58,8 @@ public class IndexerInvertedOccurrence extends Indexer implements Serializable {
   // is the
   // a HashMap from docId to each position with the doc
   // the term appears in the docId
-  transient Map<Integer, Map<Integer, List<Integer>>> invertedMap = new HashMap<Integer, Map<Integer, List<Integer>>>();
+  transient Map<Integer, Map<Integer, List<Integer>>> invertedMap 
+              = new HashMap<Integer, Map<Integer, List<Integer>>>();
 
   // auxiliary for merge
   private transient List<String> tempFileName = new ArrayList<String>();
@@ -67,7 +68,8 @@ public class IndexerInvertedOccurrence extends Indexer implements Serializable {
 
   private transient String[] catchedLines = null;
 
-  private transient Map<Integer, Integer> invertedListIndex = new HashMap<Integer, Integer>();
+  private transient Map<Integer, Integer> invertedListIndex 
+                      = new HashMap<Integer, Integer>();
 
   public IndexerInvertedOccurrence() {
   }
