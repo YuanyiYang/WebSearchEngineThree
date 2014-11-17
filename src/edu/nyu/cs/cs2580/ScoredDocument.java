@@ -29,7 +29,11 @@ class ScoredDocument implements Comparable<ScoredDocument> {
   public String asHtmlResult() {
     return "";
   }
-
+  
+  public Document getDoc() {
+    return this._doc;
+  }
+  
   @Override
   public int compareTo(ScoredDocument o) {
     if (this._score == o._score) {
