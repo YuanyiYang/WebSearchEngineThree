@@ -31,6 +31,10 @@ public class LogMinerNumviews extends LogMiner {
   public LogMinerNumviews(Options options) {
     super(options);
   }
+  
+  public LogMinerNumviews(){
+    
+  }
 
   /**
    * This function processes the logs within the log directory as specified by
@@ -68,16 +72,25 @@ public class LogMinerNumviews extends LogMiner {
       numViews.put(fileName,1);
     }
     files = null;
-    String NVFILE = _options._logPrefix + "20140601-160000.log";
+    String NVFILE = _options._logPrefix + "/20140601-160000.log";
     BufferedReader br = new BufferedReader(new InputStreamReader(
         new FileInputStream(NVFILE)));
 
     String line = null;
     while ((line = br.readLine()) != null) {
       String[] content = line.split(" ");
+      if(content==null||content.length<3){
+        continue;
+      }
       String fileName = URIParser.normalizeURL(content[1]);
       if(numViews.containsKey(fileName)){
-        numViews.put(fileName, Integer.parseInt(content[2]));
+        int num_view = 0;
+        try{
+          num_view = Integer.parseInt(content[2]);
+        } catch (Exception e){
+          continue;
+        }
+        numViews.put(fileName, num_view);
       }
     }
     br.close();

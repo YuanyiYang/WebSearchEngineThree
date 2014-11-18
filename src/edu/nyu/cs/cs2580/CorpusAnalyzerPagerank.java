@@ -19,13 +19,14 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
  */
 public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
-  private final String WORKINGDIR = System.getProperty("user.dir");
-  // PageRank result
-  private final String PR_FILE = WORKINGDIR + "/data/index/prResult";
-  //private final String CORPUS_LOC = WORKINGDIR + "/data/wiki";
-  private final String PARTIAL_PRFILE = WORKINGDIR + "/parts/PartialPRGraph";
   private float gamma; // 0.1 0.9
   private int iteration; // 1 2
+  private final String WORKINGDIR = System.getProperty("user.dir");
+  // PageRank result
+  private String PR_FILE = null; //WORKINGDIR + "/data/index/prResult" ;
+  //private final String CORPUS_LOC = WORKINGDIR + "/data/wiki";
+  private final String PARTIAL_PRFILE = WORKINGDIR + "/parts/PartialPRGraph";
+  
   // file name(URI) --> docId
   public Map<String, Integer> pageIndex = new LinkedHashMap<String, Integer>();
 
@@ -40,15 +41,21 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
   public CorpusAnalyzerPagerank(Options options) {
     super(options);
+    setRunEnv(1, 0.9f);
   }
 
+  /*
+   * Only used for test purpose
+   */
   public CorpusAnalyzerPagerank() {
+    setRunEnv(1, 0.9f);
   }
 
   // set the text file location, iteration times, gamma value
   public void setRunEnv(int iteration, float gamma) {
     this.gamma = gamma;
     this.iteration = iteration;
+    PR_FILE = WORKINGDIR + "/data/index/prResult" + String.valueOf(iteration) + String.valueOf(gamma);
   }
 
   /**
@@ -81,11 +88,11 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       System.err.println(e.getMessage());
       e.printStackTrace();
     }
-    WriteToFile writer = new WriteToFile(PARTIAL_PRFILE);
     File partialFile = new File(PARTIAL_PRFILE);
     if (partialFile.exists()) {
       partialFile.delete();
     }
+    WriteToFile writer = new WriteToFile(PARTIAL_PRFILE);
     for (int docId = 0; docId < files.size(); docId++) {
       if (!isValidDocument(files.get(docId))) {
         continue;
@@ -173,7 +180,6 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
    */
   @Override
   public void compute() throws IOException {
-    setRunEnv(1, 0.9f);
     System.out.println("Computing using " + this.getClass().getName());
     for (int i = 0; i < pageIndex.keySet().size(); i++) {
       pr.add(1.0f);

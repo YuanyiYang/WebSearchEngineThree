@@ -20,6 +20,10 @@ public abstract class LogMiner {
   public LogMiner(Options options) {
     _options = options;
   }
+  
+  public LogMiner(){
+    
+  }
 
   // Computes the desired measure based on the log and store the results to be
   // used by the load function below.

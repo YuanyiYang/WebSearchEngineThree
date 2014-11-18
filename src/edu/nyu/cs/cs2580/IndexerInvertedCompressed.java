@@ -31,8 +31,8 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
 /**
  * @CS2580: Implement this class for HW2.
  */
-public class IndexerInvertedCompressed extends Indexer implements Serializable{
-  
+public class IndexerInvertedCompressed extends Indexer implements Serializable {
+
   private static final long serialVersionUID = 4574090044401455221L;
 
   private final String WORKINGDIR = System.getProperty("user.dir");
@@ -59,8 +59,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
 
   // In-Memory Indexer: Key is the integer representation of the term and value
   // is the a HashMap from docId to each position with the term appears in the
-  // docId
-  // compress the occurence list with V-byte encoding
+  // docId; compress the occurence list with V-byte encoding
   transient Map<Integer, Map<Integer, List<Integer>>> invertedMap = new HashMap<Integer, Map<Integer, List<Integer>>>();
 
   // map each url string to the document id
@@ -79,8 +78,9 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
   private transient BufferedReader[] readingFiles = null;
 
   private transient String[] catchedLines = null;
-  
+
   private Map<Integer, Float> prResult = new HashMap<Integer, Float>();
+  private Map<Integer, Integer> numResult = new HashMap<Integer, Integer>();
 
   public IndexerInvertedCompressed() {
   }
@@ -107,6 +107,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     // write to file
     buildWholeIndexFromPartial();
     loadPageRankValue();
+    loadNumView();
     ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(
         indexFile));
     writer.writeObject(this);
@@ -114,13 +115,12 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     System.out.println("Store index to: " + indexFile);
     System.out.println("Store posting list to " + FINALINDEX);
     long now = System.currentTimeMillis();
-    System.out.println("In total: " + (now-beginTime) / 1000 + " seconds.");
+    System.out.println("In total: " + (now - beginTime) / 1000 + " seconds.");
   }
 
   @Override
   public void loadIndex() throws IOException, ClassNotFoundException {
-     String indexFile = _options._indexPrefix +
-     "/indexInvertedCompressed.idx";
+    String indexFile = _options._indexPrefix + "/indexInvertedCompressed.idx";
     System.out.println("Load index from: " + indexFile);
 
     ObjectInputStream reader = new ObjectInputStream(new FileInputStream(
@@ -140,6 +140,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     this.urlToDocId = loaded.urlToDocId;
     this.offsetInByteArray = loaded.offsetInByteArray;
     this.prResult = loaded.prResult;
+    this.numResult = loaded.numResult;
     reader.close();
     System.out.println(Integer.toString(_numDocs) + " documents loaded "
         + "with " + Long.toString(_totalTermFrequency) + " terms!");
@@ -344,22 +345,22 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     }
   }
 
-  private void loadPageRankValue(){
-    CorpusAnalyzerPagerank cpr = new CorpusAnalyzerPagerank();
+  private void loadPageRankValue() {
+    CorpusAnalyzerPagerank cpr = new CorpusAnalyzerPagerank(_options);
     Map<String, Float> pr = new HashMap<String, Float>();
     try {
       pr = cpr.load();
     } catch (IOException e) {
       e.printStackTrace();
     }
-    if(pr.size()==0){
+    if (pr.size() == 0) {
       throw new IllegalStateException("The index load page rank value error");
     }
-    for(Map.Entry<String, Float> entry : pr.entrySet()){
-      if(!urlToDocId.containsKey(entry.getKey())){
+    for (Map.Entry<String, Float> entry : pr.entrySet()) {
+      if (!urlToDocId.containsKey(entry.getKey())) {
         try {
           throw new IllegalArgumentException();
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
           e.printStackTrace();
         }
       }
@@ -367,7 +368,31 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
       prResult.put(docId, entry.getValue());
     }
   }
-  
+
+  private void loadNumView() {
+    LogMinerNumviews loger = new LogMinerNumviews(_options);
+    Map<String, Integer> num = new HashMap<String, Integer>();
+    try {
+      num = loger.load();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    if (num.size() == 0) {
+      throw new IllegalStateException("The index load num view error");
+    }
+    for (Map.Entry<String, Integer> entry : num.entrySet()) {
+      if (!urlToDocId.containsKey(entry.getKey())) {
+        try {
+          throw new IllegalArgumentException();
+        } catch (IllegalArgumentException e) {
+          e.printStackTrace();
+        }
+      }
+      int docId = urlToDocId.get(entry.getKey());
+      numResult.put(docId, entry.getValue());
+    }
+  }
+
   /*
    * Construct the index from all files under the directory
    */
@@ -429,8 +454,9 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     // Put the information that the ranker need to know about the document
     DocumentIndexed document = new DocumentIndexed(docId);
     document.setTitle(docTitle);
-    document.setUrl(file.getAbsolutePath());
-    urlToDocId.put(file.getAbsolutePath(), document._docid);
+    document.setUrl(URIParser.parseFileNameToUTF8(file.getName()));
+    urlToDocId.put(URIParser.parseFileNameToUTF8(file.getName()),
+        document._docid);
     document.setBodyFrequency(docBodyList.size());
     _documents.add(document);
 
@@ -563,7 +589,6 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
         .get(term)) : 0;
   }
 
-  
   public int documentTermFrequency(String term, String url) {
     if (!_dictionary.containsKey(term))
       return 0;
@@ -744,7 +769,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
       // update to the invertedMap
       if (!invertedMap.containsKey(term)) {
         invertedMap.put(term, r.get(term));
-      } 
+      }
     }
     finalPostingLists.close();
   }
@@ -871,7 +896,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     if (query == null)
       return null;
     QueryPhrase reviseQuery = new QueryPhrase(query._query);
-    //buildInvertMap(reviseQuery);
+    // buildInvertMap(reviseQuery);
     Vector<String> queryTokens = reviseQuery._tokens;
     Vector<Vector<String>> phrases = reviseQuery._phrases;
     for (Vector<String> p : phrases) {
@@ -920,18 +945,27 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
       Map<Integer, Map<Integer, List<Integer>>> partialMap = Compress
           .DecodeOneTermMap(input, offset);
       if (invertedMap.containsKey(termId)) {
-       throw new IllegalStateException("This term has been processed");
+        throw new IllegalStateException("This term has been processed");
       } else {
         invertedMap.put(termId, partialMap.get(termId));
       }
     }
   }
-  
+
   /**
    * @CS2580: Implement this to work with your RankerFavorite.
    */
   @Override
   public int documentTermFrequency(String term, int docid) {
-    return 0;
+    if (!_dictionary.containsKey(term))
+      return 0;
+    if (docid >= _documents.size()) {
+      return 0;
+    }
+    int termId = _dictionary.get(term);
+    if (!invertedMap.get(termId).containsKey(docid)) {
+      return 0;
+    }
+    return invertedMap.get(termId).get(docid).size();
   }
 }

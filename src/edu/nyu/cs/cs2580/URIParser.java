@@ -32,6 +32,7 @@ public class URIParser {
     } catch (Exception e) {
 
     }
+    if(temp==null) return "";
     int beginIndex = 0;
     int endIndex = temp.length();
     int hashIndex = temp.indexOf('#');
@@ -46,6 +47,7 @@ public class URIParser {
         beginIndex = colonIndex + 2;
       }
       temp = temp.substring(beginIndex);
+      beginIndex = 0;
     }
     int questionIndex = temp.indexOf('?');
     if (questionIndex > 0) {
