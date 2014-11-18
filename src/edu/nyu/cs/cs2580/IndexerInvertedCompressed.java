@@ -79,6 +79,8 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
   private transient BufferedReader[] readingFiles = null;
 
   private transient String[] catchedLines = null;
+  
+  private Map<Integer, Float> prResult = new HashMap<Integer, Float>();
 
   public IndexerInvertedCompressed() {
   }
@@ -104,6 +106,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     String indexFile = _options._indexPrefix + "/indexInvertedCompressed.idx";
     // write to file
     buildWholeIndexFromPartial();
+    loadPageRankValue();
     ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(
         indexFile));
     writer.writeObject(this);
@@ -136,6 +139,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     this._termDocFrequency = loaded._termDocFrequency;
     this.urlToDocId = loaded.urlToDocId;
     this.offsetInByteArray = loaded.offsetInByteArray;
+    this.prResult = loaded.prResult;
     reader.close();
     System.out.println(Integer.toString(_numDocs) + " documents loaded "
         + "with " + Long.toString(_totalTermFrequency) + " terms!");
@@ -340,6 +344,30 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable{
     }
   }
 
+  private void loadPageRankValue(){
+    CorpusAnalyzerPagerank cpr = new CorpusAnalyzerPagerank();
+    Map<String, Float> pr = new HashMap<String, Float>();
+    try {
+      pr = cpr.load();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    if(pr.size()==0){
+      throw new IllegalStateException("The index load page rank value error");
+    }
+    for(Map.Entry<String, Float> entry : pr.entrySet()){
+      if(!urlToDocId.containsKey(entry.getKey())){
+        try {
+          throw new IllegalArgumentException();
+        } catch (IllegalArgumentException e){
+          e.printStackTrace();
+        }
+      }
+      int docId = urlToDocId.get(entry.getKey());
+      prResult.put(docId, entry.getValue());
+    }
+  }
+  
   /*
    * Construct the index from all files under the directory
    */

@@ -93,6 +93,10 @@ public abstract class CorpusAnalyzer {
     _options = options;
   }
   
+  public CorpusAnalyzer(){
+    
+  }
+  
   // Processes the corpus and prepare necessary internal data structure for the
   // compute function below.
   public abstract void prepare() throws IOException;

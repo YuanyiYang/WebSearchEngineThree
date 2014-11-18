@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+import javax.sound.midi.SysexMessage;
+
 class WriteToFile {
 
   private File file;
@@ -24,7 +26,7 @@ class WriteToFile {
       ioe.printStackTrace();
     }
   }
-  
+
   /**
    * Should call this method after appending contents to files
    */
@@ -67,21 +69,18 @@ class WriteToFile {
    */
   public void appendToFile(String content) {
     try {
-      FileWriter fw = new FileWriter(file, true);
-      bw = new BufferedWriter(fw);
+      if (bw == null) {
+        throw new IllegalStateException(
+            "The bufferedReader in WriteToFile hasn't been initiated.");
+      }
       bw.write(content);
       bw.flush();
     } catch (IOException ioe) {
       System.err.println("Oops: " + ioe.getMessage());
-    } finally {
-      if (bw != null) {
-        try {
-          bw.close();
-        } catch (IOException e) {
-          System.err.println("Oops: " + e.getMessage());
-        }
-      }
-    }
+    } catch (IllegalStateException e) {
+      System.err.println("Oops: " + e.getMessage());
+      e.printStackTrace();
+    } 
   }
 
   public void appendListToFile(Map<Integer, List<Integer>> invertedMap) {
@@ -200,7 +199,7 @@ class WriteToFile {
     } finally {
       closeBufferWriter();
     }
-    //System.out.println("output to file.");
+    // System.out.println("output to file.");
   }
 
   public static void main(String[] args) {
