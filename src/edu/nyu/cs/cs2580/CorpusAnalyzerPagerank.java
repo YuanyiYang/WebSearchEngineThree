@@ -22,7 +22,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   private final String WORKINGDIR = System.getProperty("user.dir");
   // PageRank result
   private final String PR_FILE = WORKINGDIR + "/data/index/prResult";
-  private final String CORPUS_LOC = WORKINGDIR + "/data/wiki";
+  //private final String CORPUS_LOC = WORKINGDIR + "/data/wiki";
   private final String PARTIAL_PRFILE = WORKINGDIR + "/parts/PartialPRGraph";
   private float gamma; // 0.1 0.9
   private int iteration; // 1 2
@@ -74,6 +74,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   public void prepare() throws IOException {
     System.out.println("Preparing " + this.getClass().getName());
     List<File> files = new ArrayList<File>();
+    String CORPUS_LOC = _options._corpusPrefix;
     try {
       files = getFilesUnderDirectory(CORPUS_LOC);
     } catch (IOException e) {
@@ -140,6 +141,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
     StringBuilder result = new StringBuilder();
     List<String> outGoingLinks = new ArrayList<String>();
     String fileName = linkExtractor.getLinkSource();
+    fileName = URIParser.parseFileNameToUTF8(fileName);
     pageIndex.put(fileName, docId);
     String nextLink = null;
     while ((nextLink = linkExtractor.getNextInCorpusLinkTarget()) != null) {
