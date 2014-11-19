@@ -1,6 +1,7 @@
 package edu.nyu.cs.cs2580;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -25,15 +26,53 @@ public class RankerComprehensive extends Ranker {
   @Override
   public Vector<ScoredDocument> runQuery(Query query, int numResults) {
     Vector<ScoredDocument> r = rf.runQuery(query, numResults * 3);
-    Map<String, Double> pr = new HashMap<String, Double>();
-    Map<String, Double> nv = new HashMap<String, Double>();
+    Vector<ScoredDocument> result = new Vector<ScoredDocument>();
+    Map<String, Float> pr = new HashMap<String, Float>();
+    Map<String, Float> nv = new HashMap<String, Float>();
     
     for (ScoredDocument sd: r) {
       Document d = sd.getDocument();
-      pr.put(d.getUrl(), d.getPageRank());
-      
+      pr.put(d.getUrl(), sd.getPageRank());
+      nv.put(d.getUrl(), (float)sd.getNumview());
     }
     
-    return null;
+    pr = normalizeByRank(MapUtil.sortedByValue(pr));
+    nv = normalizeByRank(MapUtil.sortedByValue(nv));
+    Map<String, Float> merge = new HashMap<String, Float>();
+    
+    for (ScoredDocument sd: r) {
+      String docurl = sd.getDocument().getUrl();
+      merge.put(docurl, pr.get(docurl) + nv.get(docurl));
+    }
+    
+    merge = MapUtil.sortedByValue(pr);
+    int i = 0;
+    for (String docurl: merge.keySet()) {
+      if (i < numResults) {
+        for (ScoredDocument sd: r) {
+          if (sd.getDocument().getUrl().equals(docurl)) {
+            result.add(sd);
+            break;
+          }
+        }        
+        i ++;
+      } else {
+        break;
+      }
+    }
+    
+    return result;
+  }
+  
+  //normalize the LinkedHashMap by its rank using 1 / log(rank)
+  private LinkedHashMap<String, Float> normalizeByRank(Map<String, Float> map) {
+    LinkedHashMap<String, Float> r = new LinkedHashMap<String, Float>();
+    int i = 1;
+    for (String term: map.keySet()) {
+      r.put(term, (float) (1.0f / Math.log(i + 1)));
+      i ++;
+    }
+    
+    return r;
   }
 }

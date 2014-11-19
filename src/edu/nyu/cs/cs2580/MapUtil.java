@@ -38,7 +38,7 @@ public class MapUtil {
     Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
       @Override
       public int compare(Entry<K, V> o1, Entry<K, V> o2) {
-        return o1.getValue().compareTo(o2.getValue());
+        return o2.getValue().compareTo(o1.getValue());
       }
     });
     Map<K, V> result = new LinkedHashMap<K, V>();
