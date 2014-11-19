@@ -56,35 +56,17 @@ public class QueryRepresentation {
     //build the term freq map for the scored documents set
     for (ScoredDocument sd: results) {
       Document d = sd.getDocument();
-      float docTermNum = 0.0f;
-      String docLoc = WORKINGDIR + docDir + d.getUrl();
-      File file = new File(docLoc);
+      Map<String, Float> topterms = d.getTopTerms();
       
-      org.jsoup.nodes.Document doc = null;
-      try {
-        doc = Jsoup.parse(file, "UTF-8", "");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-      
-      Scanner scanner = new Scanner(doc.text().toLowerCase());
-      // parse body of the document
-      while (scanner.hasNext()) {
-        String beforeStemming = scanner.next();
-        Vector<String> temp = Tokenization(beforeStemming);  //the term in this document
-        docTermNum += (float)temp.size();
-        
-        for (String term: temp) {
-          if (terms.containsKey(term)) {
-            terms.put(term, terms.get(term) + 1.0f);
-          } else {
-            terms.put(term, 1.0f);
-          }
+      for (String term: topterms.keySet()) {
+        if (terms.containsKey(term)) {
+          terms.put(term, terms.get(term) + 1.0f);
+        } else {
+          terms.put(term, 1.0f);
         }
       }
       
-      total_tf += docTermNum;
-      scanner.close();
+      total_tf += d.getTermFrequency();
     }
     
     //calculate the probability
