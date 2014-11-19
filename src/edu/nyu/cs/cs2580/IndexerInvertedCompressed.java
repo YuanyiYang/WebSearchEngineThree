@@ -720,7 +720,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
       return;
     QueryPhrase qp = new QueryPhrase(query._query);
     String fileName = WORKINGDIR + FINALINDEX;
-    Vector<String> queryTokens = query._tokens;
+    Vector<String> queryTokens = qp._tokens;
     Vector<Vector<String>> phrases = qp._phrases;
     try {
       buildMap(queryTokens, phrases, fileName);
@@ -967,5 +967,49 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
       return 0;
     }
     return invertedMap.get(termId).get(docid).size();
+  }
+  
+  public float pageRankValueForURI(String uri){
+    if(!urlToDocId.containsKey(uri)){
+      try{
+        throw new IllegalArgumentException("This uri: " + uri + " is not initiated.");
+      } catch (IllegalArgumentException ioe){
+        ioe.printStackTrace();
+      }
+    }
+    return pageRankValueForDocID(urlToDocId.get(uri));
+  }
+  
+  public float pageRankValueForDocID(int docId){
+    if(docId>=_documents.size()){
+      try{
+        throw new IllegalArgumentException("This docid: " + docId + " is not initiated.");
+      } catch (IllegalArgumentException ioe){
+        ioe.printStackTrace();
+      }
+    }
+    return prResult.get(docId);
+  }
+  
+  public int numviewForURI(String uri){
+    if(!urlToDocId.containsKey(uri)){
+      try{
+        throw new IllegalArgumentException("This uri: " + uri + " is not initiated.");
+      } catch (IllegalArgumentException ioe){
+        ioe.printStackTrace();
+      }
+    }
+    return numviewForDocID(urlToDocId.get(uri));
+  }
+  
+  public int numviewForDocID(int docid){
+    if(docid>=_documents.size()){
+      try{
+        throw new IllegalArgumentException("This docid: " + docid + " is not initiated.");
+      } catch (IllegalArgumentException ioe){
+        ioe.printStackTrace();
+      }
+    }
+    return numResult.get(docid);
   }
 }
