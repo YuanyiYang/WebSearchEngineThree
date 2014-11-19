@@ -29,6 +29,8 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   
   // file name(URI) --> docId
   public Map<String, Integer> pageIndex = new LinkedHashMap<String, Integer>();
+  
+  public Map<Integer, Integer> redirectMap ;
 
   // _prGraph.get(i) ==> map<j,numLink> represents how many link(numLink)
   // document j has that points to document i
@@ -143,6 +145,45 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
     return;
   }
 
+  public void buildOneDoc(){
+	  HeuristicLinkExtractor linkExtractor = new HeuristicLinkExtractor(file);
+	  List<String> result = null;
+	  if(linkExtractor.isRedirect()){
+		  // update directMap
+		 result = linkExtractor.getOutLinks();
+		 
+	  }else{
+		  result=linkExtractor.getOutLinks()
+		  if(result==null){
+			  return;
+		  }else{
+			  result=linkExtractor.getOutLinks()
+		  }
+	  }
+	    String fileName = linkExtractor.getLinkSource();
+	    fileName = URIParser.parseFileNameToUTF8(fileName);
+	    pageIndex.put(fileName, docId);
+	    StringBuilder s = new StringBuilder();
+	    s.append(fileName);
+	    s.append('\n');
+	    s.append(outGoingLinks.size());
+	    s.append('\n');
+	    for (String outLink : outGoingLinks) {
+	      s.append(outLink);
+	      s.append('\n');
+	    }
+	    writer.appendToFile(result.toString());
+  }
+  
+  public void reduceRedirectMap(){
+	  
+  }
+  
+  public void rebuildPrGraph(){
+	  
+  }
+  
+  /*
   private void buildOneDoc(File file, int docId, WriteToFile writer)
       throws IOException {
     HeuristicLinkExtractor linkExtractor = new HeuristicLinkExtractor(file);
@@ -165,7 +206,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
     }
     writer.appendToFile(result.toString());
   }
-
+  */
   /**
    * This function computes the PageRank based on the internal graph generated
    * by the {@link prepare} function, and stores the PageRank to be used for
@@ -181,6 +222,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
    */
   @Override
   public void compute() throws IOException {
+	 
     System.out.println("Computing using " + this.getClass().getName());
     for (int i = 0; i < pageIndex.keySet().size(); i++) {
       pr.add(1.0f);

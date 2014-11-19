@@ -40,6 +40,8 @@ public abstract class CorpusAnalyzer {
     private BufferedReader _reader = null;
     private Matcher _matcher = null;
 
+    private List<String> outlinks;
+    
     // Constructs the extractor based on the content of the provided file.
     public HeuristicLinkExtractor(File file) throws IOException {
       _linkSource = file.getName();
@@ -78,6 +80,16 @@ public abstract class CorpusAnalyzer {
         _matcher = LINK_PATTERN.matcher(line);
       }
       return linkTarget;
+    }
+    
+    public boolean isRedirect(){
+    	return false;
+    }
+    
+    public List<String> getOutLinks(){
+    	// if no outgoing links return null
+    	// if is redirect page return destination list
+    	// else return all out going link
     }
   };
 

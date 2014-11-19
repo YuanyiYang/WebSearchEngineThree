@@ -82,4 +82,7 @@ public class QuerySimilarity {
     
     return result;
   }
+  public static void main(String[] args) {
+	 
+  }
 }
