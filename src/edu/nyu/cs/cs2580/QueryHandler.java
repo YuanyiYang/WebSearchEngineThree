@@ -8,6 +8,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import edu.nyu.cs.cs2580.QueryHandler.CgiArguments.RankerType;
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
 /**
@@ -32,6 +33,9 @@ class QueryHandler implements HttpHandler {
     // How many results to return
     private int _numResults = 10;
 
+    private int _numTerms = 0;
+    
+    private int _numDocs = 0;
     // The type of the ranker we will be using.
     public enum RankerType {
       NONE, FULLSCAN, CONJUNCTIVE, FAVORITE, COSINE, PHRASE, QL, LINEAR, COMPREHENSIVE,
@@ -75,6 +79,18 @@ class QueryHandler implements HttpHandler {
           } catch (IllegalArgumentException e) {
             // Ignored, search engine should never fail upon invalid user input.
           }
+        } else if(key.equals("numterms")){
+        	try {
+        		_numTerms = Integer.parseInt(val);
+              } catch (IllegalArgumentException e) {
+                // Ignored, search engine should never fail upon invalid user input.
+              }
+        } else if (key.equals("numdocs")){
+        	try {
+        		_numDocs = Integer.parseInt(val);
+              } catch (IllegalArgumentException e) {
+                // Ignored, search engine should never fail upon invalid user input.
+              }
         }
       } // End of iterating over params
     }
@@ -129,26 +145,23 @@ class QueryHandler implements HttpHandler {
       respondWithMsg(exchange, "Something wrong with the URI!");
       return;
     }
-    if (uriPath.equals("/search") || uriPath.equals("prf")) {
-      if (uriPath.equals("/search")) {
-        System.out.println("Query: " + uriQuery);
-        // Process the CGI arguments.
-        CgiArguments cgiArgs = new CgiArguments(uriQuery);
-        if (cgiArgs._query.isEmpty()) {
+    System.out.println(uriPath);
+    if (uriPath.equals("/search") || uriPath.equals("/prf")) {
+      CgiArguments cgiArgs = new CgiArguments(uriQuery);
+      if (cgiArgs._query.isEmpty()) {
           respondWithMsg(exchange, "No query is given!");
         }
-        // Create the ranker.
-        Ranker ranker = Ranker.Factory.getRankerByArguments(cgiArgs,
-            SearchEngine.OPTIONS, _indexer);
-        if (ranker == null) {
+      System.out.println("Query: " + uriQuery);
+      Ranker ranker = Ranker.Factory.getRankerByArguments(cgiArgs,
+              SearchEngine.OPTIONS, _indexer);
+      if (ranker == null) {
           respondWithMsg(exchange, "Ranker " + cgiArgs._rankerType.toString()
               + " is not valid!");
         }
-        // Processing the query.
-        Query processedQuery = new Query(cgiArgs._query);
-        processedQuery.processQuery();
-        // Ranking.
-        // change for adding PR and numView
+      Query processedQuery = new Query(cgiArgs._query);
+      processedQuery.processQuery();
+      if (uriPath.equals("/search")) {
+        
         Vector<ScoredDocument> scoredDocs = ranker.runQuery(processedQuery,
             10 * cgiArgs._numResults);
 
@@ -171,9 +184,14 @@ class QueryHandler implements HttpHandler {
         }
         respondWithMsg(exchange, response.toString());
         System.out.println("Finished query: " + cgiArgs._query);
-      } else {
-        
-        // prf handled here
+      } else { 	
+    	  
+           Vector<ScoredDocument> scoredDocs = ranker.runQuery(processedQuery,
+               cgiArgs._numDocs);
+           QueryRepresentation queryRepresentation = new QueryRepresentation(processedQuery._query, scoredDocs, cgiArgs._numTerms);
+           queryRepresentation.QueryExpansion();
+           System.out.println("Finished query: " + cgiArgs._query);
+           respondWithMsg(exchange, "Finish Query Expansion\n");
       }
     } else {
       respondWithMsg(exchange, "Only /search or /prf is handled!");
