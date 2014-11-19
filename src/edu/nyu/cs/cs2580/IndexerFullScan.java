@@ -251,4 +251,16 @@ class IndexerFullScan extends Indexer implements Serializable {
 
   public void buildInvertMap(Query query) {
   }
+
+  @Override
+  public float pageRankValueForDocID(int docid) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int numviewForDocID(int docid) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }

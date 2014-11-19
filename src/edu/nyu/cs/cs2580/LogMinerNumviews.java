@@ -69,7 +69,7 @@ public class LogMinerNumviews extends LogMiner {
           System.err.println(e.getMessage());
         }
       }
-      numViews.put(fileName,1);
+      numViews.put(fileName,0);
     }
     files = null;
     String NVFILE = _options._logPrefix + "/20140601-160000.log";

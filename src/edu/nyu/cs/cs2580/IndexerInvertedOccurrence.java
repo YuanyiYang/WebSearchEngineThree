@@ -884,4 +884,16 @@ public class IndexerInvertedOccurrence extends Indexer implements Serializable {
     // TODO Auto-generated method stub
     return 0;
   }
+
+  @Override
+  public float pageRankValueForDocID(int docid) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int numviewForDocID(int docid) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }
