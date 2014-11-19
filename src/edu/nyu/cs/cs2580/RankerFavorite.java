@@ -53,7 +53,8 @@ public class RankerFavorite extends Ranker {
 
     for (int i = 0; i < _indexer.numDocs(); i++) {
       DocumentIndexed doc = (DocumentIndexed) _indexer.getDoc(i);
-
+      doc.setPageRank(_indexer.pageRankValueForDocID(doc._docid));
+      doc.setNumViews(_indexer.numviewForDocID(doc._docid));
       double score = 0.0;
 
       for (String term : tf_collection.keySet()) {
@@ -62,7 +63,7 @@ public class RankerFavorite extends Ranker {
             / (double) _indexer.getDocumentSize(i) + (1 - smooth)
             * (double) tf_collection.get(term) / (double) total_tf);
       }
-
+      
       ScoredDocument s_d = new ScoredDocument(doc, score);
       rankQueue.add(s_d);
       if (rankQueue.size() > numResults) {

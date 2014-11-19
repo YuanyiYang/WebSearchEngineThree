@@ -4,11 +4,16 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
+
 /**
- * The basic implementation of a Document.  Only the most basic information are
+ * The basic implementation of a Document. Only the most basic information are
  * maintained in this class. Subclass should implement additional information
  * for display or ranking, such as snippet, term vectors, anchors, etc.
  * 
@@ -26,8 +31,8 @@ class Document implements Serializable {
   private static final long serialVersionUID = -539495106357836976L;
 
   /**
-   * A simple checker to see if a given document is present in our corpus.
-   * This is provided for illustration only.
+   * A simple checker to see if a given document is present in our corpus. This
+   * is provided for illustration only.
    */
   public static class HeuristicDocumentChecker {
     private static MessageDigest MD = null;
@@ -58,6 +63,41 @@ class Document implements Serializable {
       return _docsInCorpus.contains(new BigInteger(MD.digest(name.getBytes())));
     }
   }
+
+  /**
+   * This inner class represent a term(String) and how many time it appears in
+   * the document
+   * 
+   */
+  private class kvpair implements Comparable<kvpair>, Serializable {
+
+    private static final long serialVersionUID = -6803339922301676528L;
+    private String term;
+    private int occurence;
+
+    public kvpair(String term, int occurence) {
+      this.term = term;
+      this.occurence = occurence;
+    }
+
+    @Override
+    public int compareTo(kvpair o) {
+      if (this.occurence > o.occurence) {
+        return -1;
+      } else if (this.occurence == o.occurence) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return term + " + " + occurence;
+    }
+  }
+
+  public List<kvpair> mostFrequenceTerm = new ArrayList<kvpair>();
 
   public int _docid;
 
@@ -103,5 +143,14 @@ class Document implements Serializable {
 
   public void setNumViews(int numViews) {
     this._numViews = numViews;
+  }
+  
+  public void addTermFrequence(String term, int occurence){
+    mostFrequenceTerm.add(new kvpair(term, occurence));
+  }
+  
+  public List<kvpair> getMostFrequenceTerm(){
+    Collections.sort(mostFrequenceTerm);
+    return ImmutableList.<Document.kvpair>copyOf(mostFrequenceTerm);
   }
 }

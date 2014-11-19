@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -403,6 +404,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
     Stemmer stemmer = new Stemmer();
     Pattern pattern = Pattern.compile("\\s+");
 
+    Map<String, Integer> docDictionary = new HashMap<String, Integer>();
     org.jsoup.nodes.Document doc = null;
 
     try {
@@ -444,8 +446,18 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
         if (CharMatcher.ASCII.matchesAllOf(beforeStemming)) {
           String afterStemming = stemmer.stemStringInstance(beforeStemming);
           docBodyList.add(afterStemming);
+          if(docDictionary.containsKey(afterStemming)){
+            docDictionary.put(afterStemming, docDictionary.get(afterStemming)+1);
+          }else{
+            docDictionary.put(afterStemming, 1);
+          }
         } else {
           docBodyList.add(String.valueOf(s_temp));
+          if(docDictionary.containsKey(s_temp)){
+            docDictionary.put(s_temp, docDictionary.get(s_temp)+1);
+          }else{
+            docDictionary.put(s_temp, 1);
+          }
         }
       }
     }
@@ -459,7 +471,15 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
         document._docid);
     document.setBodyFrequency(docBodyList.size());
     _documents.add(document);
-
+    Map<String, Integer> sortedDocDic = MapUtil.sortedByValue(docDictionary);
+    Iterator<Map.Entry<String, Integer>> iterator = sortedDocDic.entrySet()
+        .iterator();
+    int i = 0;
+    while (i < 30 && iterator.hasNext()) {
+      Map.Entry<String, Integer> entry = iterator.next();
+      document.addTermFrequence(entry.getKey(), entry.getValue());
+      i++;
+    }
     Set<Integer> uniqueIds = new HashSet<Integer>();
     List<Integer> titleIntegerList = processList(docTitleList, docId, uniqueIds);
     List<Integer> bodyIntegerList = processList(docBodyList, docId, uniqueIds);

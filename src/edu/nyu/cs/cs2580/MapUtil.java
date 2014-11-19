@@ -2,6 +2,8 @@ package edu.nyu.cs.cs2580;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,23 +12,6 @@ import java.util.Map.Entry;
 
 public class MapUtil {
 
-  /*
-   * PECS stands for producer-extends, consumer-super. If a parameterized type
-   * represents a T producer, use <? extends T>; if it represents a T consumer,
-   * use <? super T>. In my own words: let's say in the function, we use the
-   * element from the parameters as type T. It's fine that it's actually a
-   * subtype of T since any where we expect T, we could use it's subtype. That
-   * means producer extends. When we return a T type, the consumer receives the
-   * type of T. Actually it could be supertype of T since anywhere we expect a
-   * supertype of T, we could use type T.
-   * 
-   * In this function, a wildcard applied to a type parameter. V was originally
-   * specified to extend Comparable<V>, but a comparable of V consumes V
-   * instances and produces integers indicating order relations. Comparables are
-   * always consumers, so we could always use Comparable<? super V> in
-   * preference to Comparable<V>. The same is true of comparators, we should
-   * always use Comparator<? super V> in preference to Comparator<V>
-   */
   /**
    * 
    * @param map
@@ -38,7 +23,7 @@ public class MapUtil {
     Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
       @Override
       public int compare(Entry<K, V> o1, Entry<K, V> o2) {
-        return o1.getValue().compareTo(o2.getValue());
+        return o2.getValue().compareTo(o1.getValue());
       }
     });
     Map<K, V> result = new LinkedHashMap<K, V>();
@@ -57,12 +42,31 @@ public class MapUtil {
    */
   public static <K, V> Map<K, V> sortedByValue(Map<K, V> map,
       Comparator<? super Map.Entry<K, V>> comparator) {
-    List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K,V>>(map.entrySet());
+    List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(map.entrySet());
     Collections.sort(list, comparator);
-    Map<K,V> result = new LinkedHashMap<K,V>();
-    for(Map.Entry<K, V> entry : list){
+    Map<K, V> result = new LinkedHashMap<K, V>();
+    for (Map.Entry<K, V> entry : list) {
       result.put(entry.getKey(), entry.getValue());
     }
     return result;
+  }
+
+  public static void main(String[] args) {
+    Map<String, Integer> map = new HashMap<String, Integer>();
+    for (int i = 1; i <= 200; i++) {
+      map.put(i + "", i);
+    }
+    Map<String, Integer> result = MapUtil.sortedByValue(map);
+    for (Map.Entry<String, Integer> entry : result.entrySet()) {
+      System.out.println(entry.getKey() + " + " + entry.getValue());
+    }
+    int i = 0;
+    Iterator<Map.Entry<String, Integer>> iterator = result.entrySet()
+        .iterator();
+    while (i < 10 && iterator.hasNext()) {
+      Map.Entry<String, Integer> entry = iterator.next();
+      System.out.println(entry.getKey() + " + " + entry.getValue());
+      i++;
+    }
   }
 }

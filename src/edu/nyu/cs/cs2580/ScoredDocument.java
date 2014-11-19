@@ -9,12 +9,14 @@ package edu.nyu.cs.cs2580;
 class ScoredDocument implements Comparable<ScoredDocument> {
   private Document _doc;
   private double _score;
-  private float pageRank = 0.0f;
-  private int numview = -1;
-  
+  private float pageRank;
+  private int numview;
+
   public ScoredDocument(Document doc, double score) {
     _doc = doc;
     _score = score;
+    pageRank = doc.getPageRank();
+    numview = doc.getNumViews();
   }
 
   public String asTextResult() {
@@ -22,12 +24,8 @@ class ScoredDocument implements Comparable<ScoredDocument> {
     buf.append(_doc._docid).append("\t");
     buf.append(_doc.getTitle()).append("\t");
     buf.append(_score);
-    if(pageRank!=0.0f){
-      buf.append("\t").append(pageRank);
-    }
-    if(numview!=-1){
-      buf.append("\t").append(numview);
-    }
+    buf.append("\t").append(pageRank);
+    buf.append("\t").append(numview);
     return buf.toString();
   }
 
@@ -37,15 +35,15 @@ class ScoredDocument implements Comparable<ScoredDocument> {
   public String asHtmlResult() {
     return "";
   }
-  
+
   public Document getDocument() {
     return this._doc;
   }
-  
-  public int getDocumentID(){
+
+  public int getDocumentID() {
     return this._doc._docid;
   }
-  
+
   @Override
   public int compareTo(ScoredDocument o) {
     if (this._score == o._score) {
