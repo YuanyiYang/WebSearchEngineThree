@@ -440,18 +440,19 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
     while (scanner.hasNext()) {
       String beforeStemming = scanner.next();
       Vector<String> temp = Tokenization(beforeStemming);
-
       for (int i = 0; i < temp.size(); i++) {
         String s_temp = temp.get(i);
         if (CharMatcher.ASCII.matchesAllOf(beforeStemming)) {
           String afterStemming = stemmer.stemStringInstance(beforeStemming);
           docBodyList.add(afterStemming);
-          if(docDictionary.containsKey(afterStemming)){
-            docDictionary.put(afterStemming, docDictionary.get(afterStemming)+1);
-          }else{
-            docDictionary.put(afterStemming, 1);
-          }
-        } else {
+          if(!StopWordsList.isStopWord(afterStemming)){
+        	  if(docDictionary.containsKey(afterStemming)){        	
+                  docDictionary.put(afterStemming, docDictionary.get(afterStemming)+1);
+               }else{
+                  docDictionary.put(afterStemming, 1);
+               }
+          	}
+         } else {
           docBodyList.add(String.valueOf(s_temp));
           if(docDictionary.containsKey(s_temp)){
             docDictionary.put(s_temp, docDictionary.get(s_temp)+1);
@@ -470,6 +471,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
     urlToDocId.put(URIParser.parseFileNameToUTF8(file.getName()),
         document._docid);
     document.setBodyFrequency(docBodyList.size());
+    document.setTermFrequency((float)docBodyList.size());
     _documents.add(document);
     Map<String, Integer> sortedDocDic = MapUtil.sortedByValue(docDictionary);
     Iterator<Map.Entry<String, Integer>> iterator = sortedDocDic.entrySet()
