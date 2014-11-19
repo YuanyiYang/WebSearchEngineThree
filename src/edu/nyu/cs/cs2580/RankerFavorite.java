@@ -30,6 +30,10 @@ public class RankerFavorite extends Ranker {
 
   @Override
   public Vector<ScoredDocument> runQuery(Query query, int numResults) {
+    /*
+     * Modified for homework 3
+     */
+    numResults *= 5;
     _indexer.buildInvertMap(query);
     Queue<ScoredDocument> rankQueue = new PriorityQueue<ScoredDocument>();
     QueryPhrase qp = new QueryPhrase(query._query);
@@ -69,12 +73,15 @@ public class RankerFavorite extends Ranker {
         rankQueue.poll();
       }
     }
+    
+    
+    
 
     Vector<ScoredDocument> results = new Vector<ScoredDocument>();
     ScoredDocument scoredDoc = null;
     while ((scoredDoc = rankQueue.poll()) != null) {
       results.add(scoredDoc);
-    }
+    }  
     Collections.sort(results, Collections.reverseOrder());
     return results;
 
