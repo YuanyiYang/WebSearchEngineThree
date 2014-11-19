@@ -6,8 +6,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
@@ -29,76 +32,10 @@ import com.google.common.collect.ImmutableList;
  */
 class Document implements Serializable {
   private static final long serialVersionUID = -539495106357836976L;
-
-  /**
-   * A simple checker to see if a given document is present in our corpus. This
-   * is provided for illustration only.
-   */
-  public static class HeuristicDocumentChecker {
-    private static MessageDigest MD = null;
-
-    private Set<BigInteger> _docsInCorpus = null;
-
-    public HeuristicDocumentChecker() throws NoSuchAlgorithmException {
-      if (MD == null) {
-        MD = MessageDigest.getInstance("MD5");
-      }
-      _docsInCorpus = new HashSet<BigInteger>();
-    }
-
-    public void addDoc(String name) {
-      if (MD != null) {
-        _docsInCorpus.add(new BigInteger(MD.digest(name.getBytes())));
-      }
-    }
-
-    public int getNumDocs() {
-      return _docsInCorpus.size();
-    }
-
-    public boolean checkDoc(String name) {
-      if (MD == null) {
-        return false;
-      }
-      return _docsInCorpus.contains(new BigInteger(MD.digest(name.getBytes())));
-    }
-  }
-
-  /**
-   * This inner class represent a term(String) and how many time it appears in
-   * the document
-   * 
-   */
-  private class kvpair implements Comparable<kvpair>, Serializable {
-
-    private static final long serialVersionUID = -6803339922301676528L;
-    private String term;
-    private int occurence;
-
-    public kvpair(String term, int occurence) {
-      this.term = term;
-      this.occurence = occurence;
-    }
-
-    @Override
-    public int compareTo(kvpair o) {
-      if (this.occurence > o.occurence) {
-        return -1;
-      } else if (this.occurence == o.occurence) {
-        return 0;
-      } else {
-        return 1;
-      }
-    }
-
-    @Override
-    public String toString() {
-      return term + " + " + occurence;
-    }
-  }
-
-  public List<kvpair> mostFrequenceTerm = new ArrayList<kvpair>();
-
+  
+  private float termFrequency;
+  private Map<String, Float> topTerms = new LinkedHashMap<String, Float>();
+  
   public int _docid;
 
   // Basic information for display
@@ -146,11 +83,52 @@ class Document implements Serializable {
   }
   
   public void addTermFrequence(String term, int occurence){
-    mostFrequenceTerm.add(new kvpair(term, occurence));
+    topTerms.put(term,(float)occurence);
   }
   
-  public List<kvpair> getMostFrequenceTerm(){
-    Collections.sort(mostFrequenceTerm);
-    return ImmutableList.<Document.kvpair>copyOf(mostFrequenceTerm);
+  public Map<String, Float> getTopTerms(){
+	return topTerms;
+  }
+  
+  public void setTermFrequency(float termFrequency){
+	  this.termFrequency = termFrequency;
+  }
+  
+  public float getTermFrequency(){
+	  return this.termFrequency;
+  }
+  
+  /**
+   * A simple checker to see if a given document is present in our corpus. This
+   * is provided for illustration only.
+   */
+  public static class HeuristicDocumentChecker {
+    private static MessageDigest MD = null;
+
+    private Set<BigInteger> _docsInCorpus = null;
+
+    public HeuristicDocumentChecker() throws NoSuchAlgorithmException {
+      if (MD == null) {
+        MD = MessageDigest.getInstance("MD5");
+      }
+      _docsInCorpus = new HashSet<BigInteger>();
+    }
+
+    public void addDoc(String name) {
+      if (MD != null) {
+        _docsInCorpus.add(new BigInteger(MD.digest(name.getBytes())));
+      }
+    }
+
+    public int getNumDocs() {
+      return _docsInCorpus.size();
+    }
+
+    public boolean checkDoc(String name) {
+      if (MD == null) {
+        return false;
+      }
+      return _docsInCorpus.contains(new BigInteger(MD.digest(name.getBytes())));
+    }
   }
 }
