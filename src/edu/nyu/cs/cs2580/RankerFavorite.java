@@ -65,6 +65,8 @@ public class RankerFavorite extends Ranker {
       }
       
       ScoredDocument s_d = new ScoredDocument(doc, score);
+      s_d.setPageRank(_indexer.pageRankValueForDocID(doc._docid));
+      s_d.setNumview(_indexer.numviewForDocID(doc._docid));
       rankQueue.add(s_d);
       if (rankQueue.size() > numResults) {
         rankQueue.poll();

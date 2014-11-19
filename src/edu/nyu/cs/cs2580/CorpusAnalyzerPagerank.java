@@ -15,7 +15,7 @@ import java.util.Map;
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
 /**
- * @CS2580: Implement this class for HW3.
+ * Calculate the PageRank for each document
  */
 public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
@@ -32,7 +32,8 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
   // _prGraph.get(i) ==> map<j,numLink> represents how many link(numLink)
   // document j has that points to document i
-  public Map<Integer, Map<Integer, Integer>> _prGraph = new HashMap<Integer, Map<Integer, Integer>>();
+  public Map<Integer, Map<Integer, Integer>> _prGraph 
+           = new HashMap<Integer, Map<Integer, Integer>>();
 
   // num = outLink.get(i) represent how many outgoinglink i has
   public Map<Integer, Integer> _outLinks = new HashMap<Integer, Integer>();
