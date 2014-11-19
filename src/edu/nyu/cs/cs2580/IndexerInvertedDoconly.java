@@ -688,4 +688,16 @@ public class IndexerInvertedDoconly extends Indexer implements Serializable {
     SearchEngine.Check(false, "Not implemented!");
     return 0;
   }
+
+  @Override
+  public float pageRankValueForDocID(int docid) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int numviewForDocID(int docid) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }

@@ -12,12 +12,11 @@ import edu.nyu.cs.cs2580.SearchEngine.Options;
 
 /**
  * @CS2580: Implement this class for HW2 based on a refactoring of your favorite
- * Ranker (except RankerPhrase) from HW1. The new Ranker should no longer rely
- * on the instructors' {@link IndexerFullScan}, instead it should use one of
- * your more efficient implementations.
+ *          Ranker (except RankerPhrase) from HW1. The new Ranker should no
+ *          longer rely on the instructors' {@link IndexerFullScan}, instead it
+ *          should use one of your more efficient implementations.
  */
 public class RankerFavorite extends Ranker {
-
 
   private long total_tf; // total term frequency in the collection
   private double smooth;
@@ -30,10 +29,7 @@ public class RankerFavorite extends Ranker {
 
   @Override
   public Vector<ScoredDocument> runQuery(Query query, int numResults) {
-    /*
-     * Modified for homework 3
-     */
-    numResults *= 5;
+
     _indexer.buildInvertMap(query);
     Queue<ScoredDocument> rankQueue = new PriorityQueue<ScoredDocument>();
     QueryPhrase qp = new QueryPhrase(query._query);
@@ -57,7 +53,7 @@ public class RankerFavorite extends Ranker {
 
     for (int i = 0; i < _indexer.numDocs(); i++) {
       DocumentIndexed doc = (DocumentIndexed) _indexer.getDoc(i);
-    
+
       double score = 0.0;
 
       for (String term : tf_collection.keySet()) {
@@ -73,17 +69,13 @@ public class RankerFavorite extends Ranker {
         rankQueue.poll();
       }
     }
-    
-    
-    
 
     Vector<ScoredDocument> results = new Vector<ScoredDocument>();
     ScoredDocument scoredDoc = null;
     while ((scoredDoc = rankQueue.poll()) != null) {
       results.add(scoredDoc);
-    }  
+    }
     Collections.sort(results, Collections.reverseOrder());
     return results;
-
   }
 }

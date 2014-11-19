@@ -248,4 +248,8 @@ public abstract class Indexer {
    * @param query
    */
   public abstract void buildInvertMap(Query query);
+  
+  public abstract float pageRankValueForDocID(int docid);
+  
+  public abstract int numviewForDocID(int docid);
 }

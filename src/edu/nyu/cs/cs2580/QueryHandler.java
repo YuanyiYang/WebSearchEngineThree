@@ -148,8 +148,16 @@ class QueryHandler implements HttpHandler {
         Query processedQuery = new Query(cgiArgs._query);
         processedQuery.processQuery();
         // Ranking.
+        // change for adding PR and numView
         Vector<ScoredDocument> scoredDocs = ranker.runQuery(processedQuery,
-            cgiArgs._numResults);
+            10 * cgiArgs._numResults);
+
+        for (ScoredDocument scd : scoredDocs) {
+          int docid = scd.getDocumentID();
+          scd.setPageRank(_indexer.pageRankValueForDocID(docid));
+          scd.setNumview(_indexer.numviewForDocID(docid));
+        }
+
         StringBuffer response = new StringBuffer();
         switch (cgiArgs._outputFormat) {
         case TEXT:
