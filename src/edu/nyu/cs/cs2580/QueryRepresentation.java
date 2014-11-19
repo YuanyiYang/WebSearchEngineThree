@@ -21,7 +21,7 @@ public class QueryRepresentation {
   
   //private static final String queryFile = "/queries.tsv/"; //query file location
   private static final String WORKINGDIR = System.getProperty("user.dir");
-  private static final String outputDir = "/query_expansion_results/";    //the outputFile directory
+  private static final String outputDir = WORKINGDIR + "/data/query_expansion_results_";    //the outputFile directory
   private static final String docDir = "/data/wiki/";
   
   private String query;
@@ -110,6 +110,11 @@ public class QueryRepresentation {
     }
     
     normalize(terms);
+    try {
+		writeToFile();
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
   }
   
   //Normalize the results 
@@ -125,10 +130,15 @@ public class QueryRepresentation {
   }
   
   //Write the query expansion results to the output file
-  public void writeToFile() throws IOException {
+  private void writeToFile() throws IOException {
     String outputFile = outputDir + query;
+    System.out.println(outputFile);
+    File file = new File(outputFile);
+    if(!file.exists()){
+    	file.createNewFile();
+    }
     OutputStreamWriter writer = 
-        new OutputStreamWriter(new FileOutputStream(outputFile, false));
+        new OutputStreamWriter(new FileOutputStream(file, false));
     
     for (String term: terms.keySet()) {
       writer.write(term + ' ' + terms.get(term).toString() + '\n');
