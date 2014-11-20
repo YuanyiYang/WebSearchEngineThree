@@ -5,7 +5,9 @@
 .DS_Store
 /.settings
 /data
-
+/parts
 # Package Files #
 *.war
 *.ear
+typescript
+
