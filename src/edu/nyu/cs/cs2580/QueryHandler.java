@@ -189,9 +189,9 @@ class QueryHandler implements HttpHandler {
            Vector<ScoredDocument> scoredDocs = ranker.runQuery(processedQuery,
                cgiArgs._numDocs);
            QueryRepresentation qr = new QueryRepresentation(scoredDocs, cgiArgs._numTerms);
-           qr.QueryExpansion();
+           String output = qr.QueryExpansion();
            System.out.println("Finished query: " + cgiArgs._query);
-           respondWithMsg(exchange, "Finish Query Expansion\n");
+           respondWithMsg(exchange, output);
       }
     } else {
       respondWithMsg(exchange, "Only /search or /prf is handled!");
