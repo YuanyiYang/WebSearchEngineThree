@@ -163,7 +163,7 @@ class QueryHandler implements HttpHandler {
       if (uriPath.equals("/search")) {
         
         Vector<ScoredDocument> scoredDocs = ranker.runQuery(processedQuery,
-            10 * cgiArgs._numResults);
+            cgiArgs._numResults);
 
         for (ScoredDocument scd : scoredDocs) {
           int docid = scd.getDocumentID();

@@ -25,7 +25,11 @@ public class Bhattacharyya {
   private static void buildQEMap() throws IOException {
     File root = new File(qrFile);
    
+    if(!root.exists()){
+    	throw new IOException("File not exists");
+    }
     //get all the query expansion results file 
+    /*
     if (!root.isDirectory()) {
       throw new IOException("The corpus path " + qrFile
                              + " is not a directory!");
@@ -48,7 +52,9 @@ public class Bhattacharyya {
           
           QEmap.put(query, terms);
       }
-    }
+      
+     } 
+      */   
   }
   
   //compute similarity between all pairs of queries
@@ -80,11 +86,41 @@ public class Bhattacharyya {
     return result;
   }
   
+  public static String getPRDoutPut(String path){
+	 
+  }
+  
   public static void main(String[] args) throws IOException {
-    qrFile += args[1];
-    outputFile += args[2];
-    buildQEMap();
-    compute();
+	if(args.length!=2){
+		throw new IllegalArgumentException("You should have two arguments");
+	}
+	String firstArg = args[0];
+	outputFile += args[1];
+	if(firstArg.indexOf(':')==-1){
+		// destination file
+		String[] content = firstArg.split(":");
+		String qsvPath = content[1];
+		File file = new File(qsvPath);
+		  if(!file.exists()){
+			  System.err.println("QSVFile not exist");
+		  }
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		String str = null;
+		while((str=reader.readLine())!=null){
+			String[] queryAndPath = str.split(":");
+			String query = queryAndPath[0];
+			String path = queryAndPath[1];
+		}
+		qrFile += content[1];
+		
+		buildQEMap();
+	    compute();
+	} else{
+		
+	}
+	
+  
+    
   }
 
 }
