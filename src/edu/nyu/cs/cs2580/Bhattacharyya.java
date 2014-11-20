@@ -1,8 +1,6 @@
 package edu.nyu.cs.cs2580;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -60,7 +58,7 @@ public class Bhattacharyya {
       br.close();
     }
   }
-  
+          
   //compute similarity between all pairs of queries
   public static void compute() throws IOException {
     OutputStreamWriter writer = 
@@ -89,12 +87,15 @@ public class Bhattacharyya {
     
     return result;
   }
-  
-  public static void main(String[] args) throws IOException {
-    qrFile += args[1];
-    outputFile += args[2];
-    buildQEMap();
-    compute();
-  }
 
+  public static void main(String[] args) throws IOException {
+  	if (args.length != 2) {
+  		throw new IllegalArgumentException("You should have two arguments");
+  	}
+  	qrFile += args[0];
+  	outputFile += args[1];
+  	getQEFile();
+  	buildQEMap();
+  	compute();
+  }
 }
