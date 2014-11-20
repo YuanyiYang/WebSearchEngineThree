@@ -22,10 +22,7 @@ public class QueryRepresentation {
   
   //private static final String queryFile = "/queries.tsv/"; //query file location
   private static final String WORKINGDIR = System.getProperty("user.dir");
-  private static final String outputDir = WORKINGDIR + "/data/query_expansion_results_";    //the outputFile directory
-  private static final String docDir = "/data/wiki/";
-  
-  private String query;
+
   private LinkedHashMap<String, Float> terms 
             = new LinkedHashMap<String, Float>();
   private Vector<ScoredDocument> results = null;  //the ranked document
@@ -53,7 +50,7 @@ public class QueryRepresentation {
   }
   
   //Get the top M term which has the largest term probability
-  public void QueryExpansion() {
+  public String QueryExpansion() {
     //build the term freq map for the scored documents set
     for (ScoredDocument sd: results) {
       Document d = sd.getDocument();
@@ -93,11 +90,12 @@ public class QueryRepresentation {
     }
     
     normalize(terms);
-    try {
-		writeToFile();
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
+    
+    StringBuilder result = new StringBuilder();
+    for (String term: terms.keySet()) {
+      result.append(term + ' ' + terms.get(term).toString() + '\n');
+    }
+    return new String(result);
   }
   
   //Normalize the results 
@@ -110,23 +108,6 @@ public class QueryRepresentation {
       float temp = terms.get(key) / sum;
       terms.put(key, temp);
     }
-  }
-  
-  //Write the query expansion results to the output file
-  private void writeToFile() throws IOException {
-    String outputFile = outputDir + query;
-    System.out.println(outputFile);
-    File file = new File(outputFile);
-    if(!file.exists()){
-    	file.createNewFile();
-    }
-    OutputStreamWriter writer = 
-        new OutputStreamWriter(new FileOutputStream(file, false));
-    
-    for (String term: terms.keySet()) {
-      writer.write(term + ' ' + terms.get(term).toString() + '\n');
-    }
-    writer.close();
   }
 
   private boolean isCharacterNumber(char c) {
@@ -198,10 +179,8 @@ public class QueryRepresentation {
     return r;
   }
   
-  public QueryRepresentation(String query,
-                             Vector<ScoredDocument> results,
+  public QueryRepresentation(Vector<ScoredDocument> results,
                              int termNum) {
-    this.query = query;
     this.results = results;
     this.termNum = termNum;
   }

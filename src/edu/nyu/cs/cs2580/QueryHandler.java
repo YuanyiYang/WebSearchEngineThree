@@ -188,8 +188,8 @@ class QueryHandler implements HttpHandler {
     	  
            Vector<ScoredDocument> scoredDocs = ranker.runQuery(processedQuery,
                cgiArgs._numDocs);
-           QueryRepresentation queryRepresentation = new QueryRepresentation(processedQuery._query, scoredDocs, cgiArgs._numTerms);
-           queryRepresentation.QueryExpansion();
+           QueryRepresentation qr = new QueryRepresentation(scoredDocs, cgiArgs._numTerms);
+           qr.QueryExpansion();
            System.out.println("Finished query: " + cgiArgs._query);
            respondWithMsg(exchange, "Finish Query Expansion\n");
       }
