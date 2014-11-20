@@ -1,7 +1,6 @@
 package edu.nyu.cs.cs2580;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,44 +18,47 @@ public class Bhattacharyya {
   static private String qrFile = WORKDIR + '/'; //query expansion results
   static private String outputFile = WORKDIR + '/';
   
+  // query --> query expansino result file
+  private static Map<String, String> QEFile = new HashMap<String, String>();
+  // query --> term / probability
   private static Map<String, Map<String, Float>> QEmap 
             = new HashMap<String, Map<String, Float>>();
   
-  private static void buildQEMap() throws IOException {
-    File root = new File(qrFile);
-   
-    if(!root.exists()){
-    	throw new IOException("File not exists");
-    }
-    //get all the query expansion results file 
-    /*
-    if (!root.isDirectory()) {
-      throw new IOException("The corpus path " + qrFile
-                             + " is not a directory!");
-    } else {
-      File[] subfiles = root.listFiles();
-      for (File f : subfiles) {
-          String query = f.getName();  
-          BufferedReader br = new BufferedReader(new FileReader(f));
-          String line;
-          Map<String, Float> terms = new HashMap<String, Float>();
-          
-          while ((line = br.readLine()) != null) {
-            Scanner s = new Scanner(line);
-            String term = s.next();
-            Float value = Float.parseFloat(s.next());
-            terms.put(term, value);
-            s.close();
-          }
-          br.close();
-          
-          QEmap.put(query, terms);
+  private static void getQEFile() throws IOException {
+    BufferedReader br = new BufferedReader(new FileReader(qrFile));
+    String line;
+    
+    while ((line = br.readLine()) != null) {
+      String[] temp = line.split(".");
+      if (temp.length == 2) {
+        QEFile.put(temp[0], temp[1]);        
       }
-      
-     } 
-      */   
+    }
+    
+    br.close();
   }
   
+  //Build the query --> query expansion map
+  private static void buildQEMap() throws IOException {
+    for (String query: QEFile.keySet()) {
+      String f = WORKDIR + '/' + QEFile.get(query); //file location
+      BufferedReader br = new BufferedReader(new FileReader(f));
+      String line;
+      Map<String, Float> terms = new HashMap<String, Float>();
+      
+      while ((line = br.readLine()) != null) {
+        Scanner s = new Scanner(line);
+        String term = s.next();
+        Float value = Float.parseFloat(s.next());
+        terms.put(term, value);
+        s.close();
+      }
+      
+      QEmap.put(query, terms);
+      br.close();
+    }
+  }
+          
   //compute similarity between all pairs of queries
   public static void compute() throws IOException {
     OutputStreamWriter writer = 
@@ -85,42 +87,15 @@ public class Bhattacharyya {
     
     return result;
   }
-  
-  public static String getPRDoutPut(String path){
-	 
-  }
-  
-  public static void main(String[] args) throws IOException {
-	if(args.length!=2){
-		throw new IllegalArgumentException("You should have two arguments");
-	}
-	String firstArg = args[0];
-	outputFile += args[1];
-	if(firstArg.indexOf(':')==-1){
-		// destination file
-		String[] content = firstArg.split(":");
-		String qsvPath = content[1];
-		File file = new File(qsvPath);
-		  if(!file.exists()){
-			  System.err.println("QSVFile not exist");
-		  }
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-		String str = null;
-		while((str=reader.readLine())!=null){
-			String[] queryAndPath = str.split(":");
-			String query = queryAndPath[0];
-			String path = queryAndPath[1];
-		}
-		qrFile += content[1];
-		
-		buildQEMap();
-	    compute();
-	} else{
-		
-	}
-	
-  
-    
-  }
 
+  public static void main(String[] args) throws IOException {
+  	if (args.length != 2) {
+  		throw new IllegalArgumentException("You should have two arguments");
+  	}
+  	qrFile += args[0];
+  	outputFile += args[1];
+  	getQEFile();
+  	buildQEMap();
+  	compute();
+  }
 }
