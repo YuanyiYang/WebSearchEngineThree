@@ -50,14 +50,14 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
   public CorpusAnalyzerPagerank(Options options) {
     super(options);
-    setRunEnv(1, 0.9f);
+    setRunEnv(2, 0.9f);
   }
 
   /*
    * Only used for test purpose
    */
   public CorpusAnalyzerPagerank() {
-    setRunEnv(1, 0.9f);
+    setRunEnv(2, 0.9f);
   }
 
   // set the text file location, iteration times, gamma value
@@ -113,8 +113,8 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
         continue;
       }
       buildOneDoc(files.get(docId), docId, writer, directWriter);
-      if (docId % 100 == 0)
-        System.out.println("build doc " + docId % 100);
+//      if (docId % 100 == 0)
+//        System.out.println("build doc " + docId % 100);
     }
     writer.closeBufferWriter();
     directWriter.closeBufferWriter();
@@ -144,7 +144,7 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       redirectMap.put(from, to);
     }
     redirectReader.close();
-    // redirectFile.delete();
+    redirectFile.delete();
 
     reduceRedirectMap();
 
@@ -184,9 +184,9 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       _outLinks.put(j, validOutLinkNum);
     }
     reader.close();
-    // if (partialFile.exists()) {
-    // partialFile.delete();
-    // }
+     if (partialFile.exists()) {
+     partialFile.delete();
+     }
 
   }
 
@@ -194,7 +194,6 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       WriteToFile redirectWriter) throws IOException {
     HeuristicLinkExtractor linkExtractor = new HeuristicLinkExtractor(file);
     String fileName = linkExtractor.getLinkSource();
-    fileName = URIParser.parseFileNameToUTF8(fileName);
     pageIndex.put(fileName, docId);
     List<String> outLinks = linkExtractor.getOutLinks();
     if (linkExtractor.isRedirect()) {
@@ -237,21 +236,6 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
     }
   }
 
-  /*
-   * private void buildOneDoc(File file, int docId, WriteToFile writer) throws
-   * IOException { HeuristicLinkExtractor linkExtractor = new
-   * HeuristicLinkExtractor(file); StringBuilder result = new StringBuilder();
-   * List<String> outGoingLinks = new ArrayList<String>(); String fileName =
-   * linkExtractor.getLinkSource(); fileName =
-   * URIParser.parseFileNameToUTF8(fileName); pageIndex.put(fileName, docId);
-   * String nextLink = null; while ((nextLink =
-   * linkExtractor.getNextInCorpusLinkTarget()) != null) {
-   * outGoingLinks.add(nextLink); } result.append(fileName);
-   * result.append('\n'); result.append(outGoingLinks.size());
-   * result.append('\n'); for (String outLink : outGoingLinks) {
-   * result.append(outLink); result.append('\n'); }
-   * writer.appendToFile(result.toString()); }
-   */
   /**
    * This function computes the PageRank based on the internal graph generated
    * by the {@link prepare} function, and stores the PageRank to be used for
@@ -294,26 +278,6 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       }
       pr = newPRValue;
     }
-    // for (int i = 0; i < iteration; i++) {
-    // for (int j = 0; j < pr.size(); j++) {
-    // float temp = 0.0f;
-    // float gammaTemp = 0.0f;
-    // // compute random page rank value
-    // for (int k = 0; k < pr.size(); k++) {
-    // temp += pr.get(k) / pr.size();
-    // }
-    // // if other document points to this document
-    // if (_prGraph.containsKey(j)) {
-    // // docURI -> outLink _prGraph.get(i) ==> map<j,numLink> j points to i
-    // for (Map.Entry<Integer, Integer> entry : _prGraph.get(j).entrySet()) {
-    // int formDocId = entry.getKey();
-    // float outLinkNum = (float) _outLinks.get(formDocId);
-    // gammaTemp += entry.getValue() * pr.get(formDocId) / outLinkNum;
-    // }
-    // }
-    // pr.set(j, (1 - gamma) * temp + gamma * gammaTemp);
-    // }
-    // }
     writeToFile();
     return;
   }

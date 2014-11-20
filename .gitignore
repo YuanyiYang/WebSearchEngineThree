@@ -9,5 +9,4 @@
 # Package Files #
 *.war
 *.ear
-typescript
-
+.nfs00000000000062a5000000b5
