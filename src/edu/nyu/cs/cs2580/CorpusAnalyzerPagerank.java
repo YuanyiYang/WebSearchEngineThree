@@ -25,29 +25,28 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   private int iteration; // 1 2
   private final String WORKINGDIR = System.getProperty("user.dir");
   // PageRank result
-  private String PR_FILE = null; //WORKINGDIR + "/data/index/prResult" ;
-  //private final String CORPUS_LOC = WORKINGDIR + "/data/wiki";
+  private String PR_FILE = null; // WORKINGDIR + "/data/index/prResult" ;
+  // private final String CORPUS_LOC = WORKINGDIR + "/data/wiki";
   private final String PARTIAL_PRFILE = WORKINGDIR + "/parts/PartialPRGraph";
   private final String REDIRECT_FILE = WORKINGDIR + "/parts/RedirectFile";
-  
+
   // file name(URI) --> docId
   public Map<String, Integer> pageIndex = new LinkedHashMap<String, Integer>();
-  
-  //regular file
+
+  // regular file
   public Set<Integer> regularFile = new HashSet<Integer>();
-  
+
   // contains all the redirect links
   public Map<Integer, Integer> redirectMap = new HashMap<Integer, Integer>();
-  
+
   // _prGraph.get(i) ==> map<j,numLink> represents how many link(numLink)
   // document j has that points to document i
-  public Map<Integer, Map<Integer, Integer>> _prGraph 
-           = new HashMap<Integer, Map<Integer, Integer>>();
+  public Map<Integer, Map<Integer, Integer>> _prGraph = new HashMap<Integer, Map<Integer, Integer>>();
 
   // num = outLink.get(i) represent how many outgoinglink i has
   public Map<Integer, Integer> _outLinks = new HashMap<Integer, Integer>();
 
-  public List<Float> pr = new ArrayList<Float>();
+  public Map<Integer, Float> pr = new HashMap<Integer, Float>();
 
   public CorpusAnalyzerPagerank(Options options) {
     super(options);
@@ -65,7 +64,8 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
   public void setRunEnv(int iteration, float gamma) {
     this.gamma = gamma;
     this.iteration = iteration;
-    PR_FILE = WORKINGDIR + "/data/index/prResult" + String.valueOf(iteration) + String.valueOf(gamma);
+    PR_FILE = WORKINGDIR + "/data/index/prResult" + String.valueOf(iteration)
+        + String.valueOf(gamma);
   }
 
   /**
@@ -103,8 +103,8 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       partialFile.delete();
     }
     File redirectMapFile = new File(REDIRECT_FILE);
-    if(redirectMapFile.exists()){
-    	redirectMapFile.delete();
+    if (redirectMapFile.exists()) {
+      redirectMapFile.delete();
     }
     WriteToFile writer = new WriteToFile(PARTIAL_PRFILE);
     WriteToFile directWriter = new WriteToFile(REDIRECT_FILE);
@@ -113,144 +113,145 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
         continue;
       }
       buildOneDoc(files.get(docId), docId, writer, directWriter);
-      if(docId%100==0) System.out.println("build doc " + docId % 100); 
+      if (docId % 100 == 0)
+        System.out.println("build doc " + docId % 100);
     }
     writer.closeBufferWriter();
     directWriter.closeBufferWriter();
-    
+
     readDataFromFile();
-    
+
     return;
   }
 
-  public void readDataFromFile() throws IOException{
-	  //read redirect file first
-	  File redirectFile = new File(REDIRECT_FILE);
-	  BufferedReader redirectReader = new BufferedReader(new FileReader(redirectFile));
-	  String content = null;
-	  while((content=redirectReader.readLine())!=null){
-	    	String[] ARedirectToB = content.split(" ");
-	    	String redirectFromFile = ARedirectToB[0];
-	    	String redirectToFile = ARedirectToB[1];
-	    	if(!pageIndex.containsKey(redirectFromFile) || !pageIndex.containsKey(redirectToFile)){
-	    		// one or all of these two files not appear in the corpus
-	    		continue;
-	    	}
-	    	int from = pageIndex.get(redirectFromFile);
-	    	int to = pageIndex.get(redirectToFile);
-	    	redirectMap.put(from, to);
-	  }
-	  redirectReader.close();
-	  //redirectFile.delete();
-	  
-	  reduceRedirectMap();
-	  
-	  File partialFile = new File(PARTIAL_PRFILE);
-	  BufferedReader reader = new BufferedReader(new FileReader(partialFile));
-	    String docURI = null;
-	    while ((docURI = reader.readLine()) != null) {
-	      int j = pageIndex.get(docURI);
-	      int validOutLinkNum = 0;
-	      int outLinks = Integer.parseInt(reader.readLine());
-	      while (outLinks > 0) {
-	        String outLink = reader.readLine();
-	        outLinks--;
-	        if (!pageIndex.keySet().contains(outLink)) {
-	          continue;
-	        }
-	        int i = pageIndex.get(outLink);
-	        // if the link is a redirect link
-	        if(redirectMap.containsKey(i)){
-	        	i = redirectMap.get(i);
-	        }
-	        validOutLinkNum++;
-	        // docURI -> outLink _prGraph.get(i) ==> map<j,numLink> j points to i
-	        Map<Integer, Integer> matrix = null;
-	        if (!_prGraph.containsKey(i)) {
-	          matrix = new HashMap<Integer, Integer>();
-	        } else {
-	          matrix = _prGraph.get(i);
-	        }
-	        if (matrix.containsKey(j)) {
-	          matrix.put(j, matrix.get(j) + 1);
-	        } else {
-	          matrix.put(j, 1);
-	        }
-	        _prGraph.put(i, matrix);
-	      }
-	      _outLinks.put(j, validOutLinkNum);
-	    }
-	    reader.close();
-//	    if (partialFile.exists()) {
-//	      partialFile.delete();
-//	    }
-	   
+  public void readDataFromFile() throws IOException {
+    // read redirect file first
+    File redirectFile = new File(REDIRECT_FILE);
+    BufferedReader redirectReader = new BufferedReader(new FileReader(
+        redirectFile));
+    String content = null;
+    while ((content = redirectReader.readLine()) != null) {
+      String[] ARedirectToB = content.split(" ");
+      String redirectFromFile = ARedirectToB[0];
+      String redirectToFile = ARedirectToB[1];
+      if (!pageIndex.containsKey(redirectFromFile)
+          || !pageIndex.containsKey(redirectToFile)) {
+        // one or all of these two files not appear in the corpus
+        continue;
+      }
+      int from = pageIndex.get(redirectFromFile);
+      int to = pageIndex.get(redirectToFile);
+      redirectMap.put(from, to);
+    }
+    redirectReader.close();
+    // redirectFile.delete();
+
+    reduceRedirectMap();
+
+    File partialFile = new File(PARTIAL_PRFILE);
+    BufferedReader reader = new BufferedReader(new FileReader(partialFile));
+    String docURI = null;
+    while ((docURI = reader.readLine()) != null) {
+      int j = pageIndex.get(docURI);
+      int validOutLinkNum = 0;
+      int outLinks = Integer.parseInt(reader.readLine());
+      while (outLinks > 0) {
+        String outLink = reader.readLine();
+        outLinks--;
+        if (!pageIndex.keySet().contains(outLink)) {
+          continue;
+        }
+        int i = pageIndex.get(outLink);
+        // if the link is a redirect link
+        if (redirectMap.containsKey(i)) {
+          i = redirectMap.get(i);
+        }
+        validOutLinkNum++;
+        // docURI -> outLink _prGraph.get(i) ==> map<j,numLink> j points to i
+        Map<Integer, Integer> matrix = null;
+        if (!_prGraph.containsKey(i)) {
+          matrix = new HashMap<Integer, Integer>();
+        } else {
+          matrix = _prGraph.get(i);
+        }
+        if (matrix.containsKey(j)) {
+          matrix.put(j, matrix.get(j) + 1);
+        } else {
+          matrix.put(j, 1);
+        }
+        _prGraph.put(i, matrix);
+      }
+      _outLinks.put(j, validOutLinkNum);
+    }
+    reader.close();
+    // if (partialFile.exists()) {
+    // partialFile.delete();
+    // }
+
   }
-  public void buildOneDoc(File file, int docId, WriteToFile writer, WriteToFile redirectWriter) throws IOException{
-	  HeuristicLinkExtractor linkExtractor = new HeuristicLinkExtractor(file);
-	  String fileName = linkExtractor.getLinkSource();
-	  fileName = URIParser.parseFileNameToUTF8(fileName);
-	  pageIndex.put(fileName, docId);
-	  List<String> outLinks = linkExtractor.getOutLinks();
-	  if(linkExtractor.isRedirect()){
-		 if(outLinks.size()!=1){
-			 throw new IllegalStateException();
-		 }
-		 String toFileName = outLinks.get(0);
-		 toFileName = URIParser.parseFileNameToUTF8(toFileName);
-		 StringBuilder result = new StringBuilder();
-		 result.append(fileName).append(" ").append(toFileName).append("\n");
-		 redirectWriter.appendToFile(result.toString());
-	  }else{
-		  regularFile.add(docId);
-		  StringBuilder s = new StringBuilder();
-		  s.append(fileName);
-		  s.append('\n');
-		  s.append(outLinks.size());
-		  s.append('\n');
-		  for (String outLink : outLinks) {
-		      s.append(URIParser.parseFileNameToUTF8(outLink));
-		      s.append('\n');
-		  }
-		  writer.appendToFile(s.toString());
-	  } 
-  }
-  
-  public void reduceRedirectMap(){
-	  // redirectmap Map<Integer, Integer>
-	  for( Map.Entry<Integer, Integer> entry : redirectMap.entrySet()){
-		  int finalDestination = entry.getValue();
-		  while(redirectMap.containsKey(finalDestination)){
-			  finalDestination = redirectMap.get(finalDestination);
-		  }
-		  redirectMap.put(entry.getKey(),finalDestination);
-	  }
-  }
-  
-  /*
-  private void buildOneDoc(File file, int docId, WriteToFile writer)
-      throws IOException {
+
+  public void buildOneDoc(File file, int docId, WriteToFile writer,
+      WriteToFile redirectWriter) throws IOException {
     HeuristicLinkExtractor linkExtractor = new HeuristicLinkExtractor(file);
-    StringBuilder result = new StringBuilder();
-    List<String> outGoingLinks = new ArrayList<String>();
     String fileName = linkExtractor.getLinkSource();
     fileName = URIParser.parseFileNameToUTF8(fileName);
     pageIndex.put(fileName, docId);
-    String nextLink = null;
-    while ((nextLink = linkExtractor.getNextInCorpusLinkTarget()) != null) {
-      outGoingLinks.add(nextLink);
+    List<String> outLinks = linkExtractor.getOutLinks();
+    if (linkExtractor.isRedirect()) {
+      if (outLinks.size() != 1) {
+        throw new IllegalStateException();
+      }
+      String toFileName = outLinks.get(0);
+      toFileName = URIParser.parseFileNameToUTF8(toFileName);
+      StringBuilder result = new StringBuilder();
+      result.append(fileName).append(" ").append(toFileName).append("\n");
+      redirectWriter.appendToFile(result.toString());
+    } else {
+      regularFile.add(docId);
+      StringBuilder s = new StringBuilder();
+      s.append(fileName);
+      s.append('\n');
+      s.append(outLinks.size());
+      s.append('\n');
+      for (String outLink : outLinks) {
+        s.append(URIParser.parseFileNameToUTF8(outLink));
+        s.append('\n');
+      }
+      writer.appendToFile(s.toString());
     }
-    result.append(fileName);
-    result.append('\n');
-    result.append(outGoingLinks.size());
-    result.append('\n');
-    for (String outLink : outGoingLinks) {
-      result.append(outLink);
-      result.append('\n');
-    }
-    writer.appendToFile(result.toString());
   }
-  */
+
+  public void reduceRedirectMap() {
+    // redirectmap Map<Integer, Integer>
+    for (Map.Entry<Integer, Integer> entry : redirectMap.entrySet()) {
+      int finalDestination = entry.getValue();
+      while (redirectMap.containsKey(finalDestination)) {
+        int temp = redirectMap.get(finalDestination);
+        if (temp == finalDestination) {
+          break; // do not handle infinite loop; just break
+        } else {
+          finalDestination = temp;
+        }
+      }
+      redirectMap.put(entry.getKey(), finalDestination);
+    }
+  }
+
+  /*
+   * private void buildOneDoc(File file, int docId, WriteToFile writer) throws
+   * IOException { HeuristicLinkExtractor linkExtractor = new
+   * HeuristicLinkExtractor(file); StringBuilder result = new StringBuilder();
+   * List<String> outGoingLinks = new ArrayList<String>(); String fileName =
+   * linkExtractor.getLinkSource(); fileName =
+   * URIParser.parseFileNameToUTF8(fileName); pageIndex.put(fileName, docId);
+   * String nextLink = null; while ((nextLink =
+   * linkExtractor.getNextInCorpusLinkTarget()) != null) {
+   * outGoingLinks.add(nextLink); } result.append(fileName);
+   * result.append('\n'); result.append(outGoingLinks.size());
+   * result.append('\n'); for (String outLink : outGoingLinks) {
+   * result.append(outLink); result.append('\n'); }
+   * writer.appendToFile(result.toString()); }
+   */
   /**
    * This function computes the PageRank based on the internal graph generated
    * by the {@link prepare} function, and stores the PageRank to be used for
@@ -266,31 +267,53 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
    */
   @Override
   public void compute() throws IOException {
-	  
+
     System.out.println("Computing using " + this.getClass().getName());
-    for (int i = 0; i < regularFile.size(); i++) {
-      pr.add(1.0f);
+    for (Integer docId : regularFile) {
+      pr.put(docId, 1.0f);
     }
-    for (int i = 0; i < iteration; i++) {
-      for (int j = 0; j < pr.size(); j++) {
-        float temp = 0.0f;
-        float gammaTemp = 0.0f;
+    for (int k = 0; k < iteration; k++) {
+      Map<Integer, Float> newPRValue = new HashMap<Integer, Float>();
+      for (Map.Entry<Integer, Float> docToPrValue : pr.entrySet()) {
+        // docURI -> outLink _prGraph.get(i) ==> map<j,numLink> j points to i
+        int i = docToPrValue.getKey();
+        float temp = 0.0f;  // random browse model
+        float gammaTemp = 0.0f; 
         // compute random page rank value
-        for (int k = 0; k < pr.size(); k++) {
-          temp += pr.get(k) / pr.size();
+        for(Map.Entry<Integer, Float> entry : pr.entrySet()){
+          temp += entry.getValue() / pr.size();
         }
-        // if other document points to this document
-        if (_prGraph.containsKey(j)) {
-          // docURI -> outLink _prGraph.get(i) ==> map<j,numLink> j points to i
-          for (Map.Entry<Integer, Integer> entry : _prGraph.get(j).entrySet()) {
-            int formDocId = entry.getKey();
-            float outLinkNum = (float) _outLinks.get(formDocId);
-            gammaTemp += entry.getValue() * pr.get(formDocId) / outLinkNum;
+        if(_prGraph.containsKey(i)){
+          for(Map.Entry<Integer, Integer> docIdWithLinkNum : _prGraph.get(i).entrySet()){
+            int fromDocId = docIdWithLinkNum.getKey();
+            float outLinkNum = (float) _outLinks.get(fromDocId);
+            gammaTemp += docIdWithLinkNum.getValue() * pr.get(fromDocId) / outLinkNum;
           }
         }
-        pr.set(j, (1 - gamma) * temp + gamma * gammaTemp);
+        newPRValue.put(i, (1-gamma) * temp + gamma * gammaTemp);
       }
+      pr = newPRValue;
     }
+    // for (int i = 0; i < iteration; i++) {
+    // for (int j = 0; j < pr.size(); j++) {
+    // float temp = 0.0f;
+    // float gammaTemp = 0.0f;
+    // // compute random page rank value
+    // for (int k = 0; k < pr.size(); k++) {
+    // temp += pr.get(k) / pr.size();
+    // }
+    // // if other document points to this document
+    // if (_prGraph.containsKey(j)) {
+    // // docURI -> outLink _prGraph.get(i) ==> map<j,numLink> j points to i
+    // for (Map.Entry<Integer, Integer> entry : _prGraph.get(j).entrySet()) {
+    // int formDocId = entry.getKey();
+    // float outLinkNum = (float) _outLinks.get(formDocId);
+    // gammaTemp += entry.getValue() * pr.get(formDocId) / outLinkNum;
+    // }
+    // }
+    // pr.set(j, (1 - gamma) * temp + gamma * gammaTemp);
+    // }
+    // }
     writeToFile();
     return;
   }
@@ -307,8 +330,13 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
       result = new StringBuilder();
       result.append(entry.getKey());
       result.append('\n');
-      result.append(pr.get(entry.getValue()));
-      result.append('\n');
+      if(pr.containsKey(entry.getValue())){
+        result.append(pr.get(entry.getValue()));
+        result.append('\n');
+      }else{
+        result.append(-1);
+        result.append('\n');
+      }
       writer.appendToFile(result.toString());
     }
     writer.closeBufferWriter();
