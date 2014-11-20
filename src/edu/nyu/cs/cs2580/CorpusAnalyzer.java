@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,10 +38,17 @@ public abstract class CorpusAnalyzer {
     private static final Pattern LINK_PATTERN =
         Pattern.compile("<[a|A].*?href=\"([^ /#]*)\".*?>");
 
+    private static final Pattern REDIRECT_PATTERN = 
+    	Pattern.compile("<[m|M][e|E][T|t][a|A].*?http-equiv=\"refresh\".*?url=([^ /#]*)\">");
+    
     private String _linkSource = null;
     private BufferedReader _reader = null;
     private Matcher _matcher = null;
+    private Matcher redirectMatcher = null;
+    boolean isRidirect = false;
 
+    private List<String> outlinks = null;
+    
     // Constructs the extractor based on the content of the provided file.
     public HeuristicLinkExtractor(File file) throws IOException {
       _linkSource = file.getName();
@@ -47,6 +56,7 @@ public abstract class CorpusAnalyzer {
       String line = _reader.readLine();
       if (line != null) {
         _matcher = LINK_PATTERN.matcher(line);
+        redirectMatcher = REDIRECT_PATTERN.matcher(line);
       }
     }
 
@@ -64,6 +74,12 @@ public abstract class CorpusAnalyzer {
       }
       String linkTarget = null;
       while (linkTarget == null) {
+    	if(redirectMatcher.find()){
+    		isRidirect = true;
+    		outlinks = new ArrayList<String>();
+    		outlinks.add(redirectMatcher.group(1));
+    		return null;
+    	}
         if (_matcher.find()) {
           if ((linkTarget = _matcher.group(1)) != null) {
             return linkTarget;
@@ -72,12 +88,31 @@ public abstract class CorpusAnalyzer {
         String line = _reader.readLine();
         if (line == null) {  // End of file
           _matcher = null;
+          redirectMatcher = null;
           _reader.close();
           break;
         }
         _matcher = LINK_PATTERN.matcher(line);
+        redirectMatcher = REDIRECT_PATTERN.matcher(line);
       }
       return linkTarget;
+    }
+    
+    public boolean isRedirect(){
+    	return isRidirect;
+    }
+    
+    public List<String> getOutLinks(){
+    	outlinks = new ArrayList<String>();
+    	String link = null;
+    	try {
+			while((link=getNextInCorpusLinkTarget())!=null){
+				outlinks.add(link);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	return outlinks;
     }
   };
 
