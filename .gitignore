@@ -1,6 +1,5 @@
 /bin
 /results
-*.tsv
 *.class
 .DS_Store
 /.settings
@@ -9,4 +8,5 @@
 # Package Files #
 *.war
 typescript
+/parts
 *.ear
