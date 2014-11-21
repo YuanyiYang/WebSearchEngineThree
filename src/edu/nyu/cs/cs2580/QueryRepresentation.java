@@ -19,21 +19,21 @@ import org.jsoup.Jsoup;
  */
 
 public class QueryRepresentation {
-  
-  //private static final String queryFile = "/queries.tsv/"; //query file location
+
+  // private static final String queryFile = "/queries.tsv/"; //query file
+  // location
   private static final String WORKINGDIR = System.getProperty("user.dir");
 
-  private LinkedHashMap<String, Float> terms 
-            = new LinkedHashMap<String, Float>();
-  private Vector<ScoredDocument> results = null;  //the ranked document
-  private int termNum;   //restricted number of terms
-  private float total_tf = 0.0f; //total term frequence in the top k results
-  
-  //Utilized for sorting
+  private LinkedHashMap<String, Float> terms = new LinkedHashMap<String, Float>();
+  private Vector<ScoredDocument> results = null; // the ranked document
+  private int termNum; // restricted number of terms
+  private float total_tf = 0.0f; // total term frequence in the top k results
+
+  // Utilized for sorting
   class kvpair implements Comparable<kvpair> {
     public String key;
     public float value;
-    
+
     public kvpair(String key, Float value) {
       this.key = key;
       this.value = value;
@@ -41,70 +41,73 @@ public class QueryRepresentation {
 
     @Override
     public int compareTo(kvpair kvp) {
-      if (this.value <= kvp.value) {
+      if (this.value < kvp.value) {
         return 1;
+      } else if (this.value == kvp.value) {
+        return 0;
       } else {
         return -1;
       }
     }
   }
-  
-  //Get the top M term which has the largest term probability
+
+  // Get the top M term which has the largest term probability
   public String QueryExpansion() {
-    //build the term freq map for the scored documents set
-    for (ScoredDocument sd: results) {
+    // build the term freq map for the scored documents set
+    System.out.println(1);
+    for (ScoredDocument sd : results) {
       Document d = sd.getDocument();
       Map<String, Float> topterms = d.getTopTerms();
-      
-      for (String term: topterms.keySet()) {
+
+      for (String term : topterms.keySet()) {
         if (terms.containsKey(term)) {
           terms.put(term, terms.get(term) + 1.0f);
         } else {
           terms.put(term, 1.0f);
         }
       }
-      
+
       total_tf += d.getTermFrequency();
     }
-    
-    //calculate the probability
-    for (String term: terms.keySet()) {
+    System.out.println(2);
+    // calculate the probability
+    for (String term : terms.keySet()) {
       terms.put(term, (terms.get(term) / total_tf));
     }
-    
-    //sort the result and truncate the result based on ranking and parameter
+    System.out.println(3);
+    // sort the result and truncate the result based on ranking and parameter
     if (terms.keySet().size() > termNum) {
       List<kvpair> temp = new ArrayList<kvpair>();
-      for (String key: terms.keySet()) {
+      for (String key : terms.keySet()) {
         temp.add(new kvpair(key, terms.get(key)));
       }
-      
+
       Collections.sort(temp);
       terms.clear();
-      
-      //put the top m terms into the terms map
+
+      // put the top m terms into the terms map
       for (int i = 0; i < termNum; i++) {
         terms.put(temp.get(i).key, temp.get(i).value);
       }
       temp = null;
     }
-    
+
     normalize(terms);
-    
+
     StringBuilder result = new StringBuilder();
-    for (String term: terms.keySet()) {
+    for (String term : terms.keySet()) {
       result.append(term + ' ' + terms.get(term).toString() + '\n');
     }
     return new String(result);
   }
-  
-  //Normalize the results 
+
+  // Normalize the results
   private void normalize(LinkedHashMap<String, Float> terms) {
     float sum = 0.0f;
-    for (String key: terms.keySet()) {
+    for (String key : terms.keySet()) {
       sum += terms.get(key);
     }
-    for (String key: terms.keySet()) {
+    for (String key : terms.keySet()) {
       float temp = terms.get(key) / sum;
       terms.put(key, temp);
     }
@@ -178,9 +181,8 @@ public class QueryRepresentation {
 
     return r;
   }
-  
-  public QueryRepresentation(Vector<ScoredDocument> results,
-                             int termNum) {
+
+  public QueryRepresentation(Vector<ScoredDocument> results, int termNum) {
     this.results = results;
     this.termNum = termNum;
     System.out.println("Rebuilding the query");

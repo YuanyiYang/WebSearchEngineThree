@@ -161,6 +161,16 @@ public abstract class Indexer {
       return false;
     }
   }
+  
+  public boolean isEnglishWord(String str){
+    if(str==null||str.length()==0) return false;
+    for(int i=0;i<str.length();i++){
+      if(!isCharacterNumber(str.charAt(i))){
+        return false;
+      }
+    }
+    return true;
+  }
 
   // tokenizer for the input string
   public Vector<String> Tokenization(String s) {
