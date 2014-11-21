@@ -25,6 +25,7 @@ public class RankerComprehensive extends Ranker {
 
   @Override
   public Vector<ScoredDocument> runQuery(Query query, int numResults) {
+	  _indexer.buildInvertMap(query);
     Vector<ScoredDocument> r = rf.runQuery(query, numResults * 3);
     Vector<ScoredDocument> result = new Vector<ScoredDocument>();
     Map<String, Float> pr = new HashMap<String, Float>();

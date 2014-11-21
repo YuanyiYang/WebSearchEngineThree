@@ -183,5 +183,6 @@ public class QueryRepresentation {
                              int termNum) {
     this.results = results;
     this.termNum = termNum;
+    System.out.println("Rebuilding the query");
   }
 }
