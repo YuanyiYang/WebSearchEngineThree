@@ -430,8 +430,8 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
         String s_temp = temp.get(i);
         if (CharMatcher.ASCII.matchesAllOf(s_temp)) {
           String afterStemming = stemmer.stemStringInstance(s_temp);
-          if(afterStemming.trim()!=""){
-        	  docTitleList.add(afterStemming);
+          if (afterStemming.trim() != "") {
+            docTitleList.add(afterStemming);
           }
         } else {
           docTitleList.add(s_temp);
@@ -450,23 +450,24 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
         if (CharMatcher.ASCII.matchesAllOf(beforeStemming)) {
           String afterStemming = stemmer.stemStringInstance(beforeStemming);
           docBodyList.add(afterStemming);
-          afterStemming=afterStemming.trim();
-          if(!afterStemming.equals("")){
-        	  if(!StopWordsList.isStopWord(afterStemming)){
-            	  if(docDictionary.containsKey(afterStemming)){        	
-                      docDictionary.put(afterStemming, docDictionary.get(afterStemming)+1);
-                   }else{
-                      docDictionary.put(afterStemming, 1);
-                   }
-              	}
-          }      
-         } else {
-          docBodyList.add(String.valueOf(s_temp));
-          if(docDictionary.containsKey(s_temp)){
-            docDictionary.put(s_temp, docDictionary.get(s_temp)+1);
-          }else{
-            docDictionary.put(s_temp, 1);
+          afterStemming = afterStemming.trim();
+          if (!afterStemming.equals("") && isEnglishWord(afterStemming)) {
+            if (!StopWordsList.isStopWord(afterStemming)) {
+              if (docDictionary.containsKey(afterStemming)) {
+                docDictionary.put(afterStemming,
+                    docDictionary.get(afterStemming) + 1);
+              } else {
+                docDictionary.put(afterStemming, 1);
+              }
+            }
           }
+        } else {
+          docBodyList.add(String.valueOf(s_temp));
+//          if (docDictionary.containsKey(s_temp)) {
+//            docDictionary.put(s_temp, docDictionary.get(s_temp) + 1);
+//          } else {
+//            docDictionary.put(s_temp, 1);
+//          }
         }
       }
     }
@@ -479,13 +480,14 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
     urlToDocId.put(URIParser.parseFileNameToUTF8(file.getName()),
         document._docid);
     document.setBodyFrequency(docBodyList.size());
-    document.setTermFrequency((float)docBodyList.size());
+    document.setTermFrequency((float) docBodyList.size());
     _documents.add(document);
     Map<String, Integer> sortedDocDic = MapUtil.sortedByValue(docDictionary);
     StringBuilder tempResult = new StringBuilder();
     tempResult.append(docId).append(" ");
-    for(Map.Entry<String, Integer> entry : docDictionary.entrySet()){
-      tempResult.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ");
+    for (Map.Entry<String, Integer> entry : docDictionary.entrySet()) {
+      tempResult.append(entry.getKey()).append(" ").append(entry.getValue())
+          .append(" ");
     }
     tempResult.append("\n");
     writerTermFeature.appendToFile(tempResult.toString());
@@ -1005,45 +1007,49 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
     }
     return invertedMap.get(termId).get(docid).size();
   }
-  
-  public float pageRankValueForURI(String uri){
-    if(!urlToDocId.containsKey(uri)){
-      try{
-        throw new IllegalArgumentException("This uri: " + uri + " is not initiated.");
-      } catch (IllegalArgumentException ioe){
+
+  public float pageRankValueForURI(String uri) {
+    if (!urlToDocId.containsKey(uri)) {
+      try {
+        throw new IllegalArgumentException("This uri: " + uri
+            + " is not initiated.");
+      } catch (IllegalArgumentException ioe) {
         ioe.printStackTrace();
       }
     }
     return pageRankValueForDocID(urlToDocId.get(uri));
   }
-  
-  public float pageRankValueForDocID(int docId){
-    if(docId>=_documents.size()){
-      try{
-        throw new IllegalArgumentException("This docid: " + docId + " is not initiated.");
-      } catch (IllegalArgumentException ioe){
+
+  public float pageRankValueForDocID(int docId) {
+    if (docId >= _documents.size()) {
+      try {
+        throw new IllegalArgumentException("This docid: " + docId
+            + " is not initiated.");
+      } catch (IllegalArgumentException ioe) {
         ioe.printStackTrace();
       }
     }
     return prResult.get(docId);
   }
-  
-  public int numviewForURI(String uri){
-    if(!urlToDocId.containsKey(uri)){
-      try{
-        throw new IllegalArgumentException("This uri: " + uri + " is not initiated.");
-      } catch (IllegalArgumentException ioe){
+
+  public int numviewForURI(String uri) {
+    if (!urlToDocId.containsKey(uri)) {
+      try {
+        throw new IllegalArgumentException("This uri: " + uri
+            + " is not initiated.");
+      } catch (IllegalArgumentException ioe) {
         ioe.printStackTrace();
       }
     }
     return numviewForDocID(urlToDocId.get(uri));
   }
-  
-  public int numviewForDocID(int docid){
-    if(docid>=_documents.size()){
-      try{
-        throw new IllegalArgumentException("This docid: " + docid + " is not initiated.");
-      } catch (IllegalArgumentException ioe){
+
+  public int numviewForDocID(int docid) {
+    if (docid >= _documents.size()) {
+      try {
+        throw new IllegalArgumentException("This docid: " + docid
+            + " is not initiated.");
+      } catch (IllegalArgumentException ioe) {
         ioe.printStackTrace();
       }
     }

@@ -17,7 +17,8 @@ import edu.nyu.cs.cs2580.QueryHandler.CgiArguments;
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
 public class RankerQL extends Ranker{
-  static private final String docTermFreqFile = "";
+  static private final String WORKINGDIR = System.getProperty("user.dir");
+  static private final String docTermFreqFile = WORKINGDIR + "/data/index/documentCorpus";
   private static int numDocs;
   private double gamma = 0.5;
   
