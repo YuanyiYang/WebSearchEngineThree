@@ -16,8 +16,8 @@ import edu.nyu.cs.cs2580.QueryHandler.CgiArguments;
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
 public class RankerCosine extends Ranker {
-  
-  static private final String docTermFreqFile = "";
+  static private final String WORKINGDIR = System.getProperty("user.dir");
+  static private final String docTermFreqFile = WORKINGDIR + "/data/index/documentCorpus";
   private static int numDocs;
 
   public RankerCosine(Options options, CgiArguments arguments,
@@ -65,7 +65,7 @@ public class RankerCosine extends Ranker {
       
       while (s.hasNext()) {
         String term = s.next();
-        double freq = (double)Integer.parseInt(s.next());
+        double freq = (double)Integer.parseInt(s.next().trim());
         docTerm.put(term, freq);
       }
       

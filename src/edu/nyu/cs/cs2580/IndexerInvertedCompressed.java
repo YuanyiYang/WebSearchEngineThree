@@ -430,7 +430,9 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
         String s_temp = temp.get(i);
         if (CharMatcher.ASCII.matchesAllOf(s_temp)) {
           String afterStemming = stemmer.stemStringInstance(s_temp);
-          docTitleList.add(afterStemming);
+          if(afterStemming.trim()!=""){
+        	  docTitleList.add(afterStemming);
+          }
         } else {
           docTitleList.add(s_temp);
         }
@@ -448,13 +450,16 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
         if (CharMatcher.ASCII.matchesAllOf(beforeStemming)) {
           String afterStemming = stemmer.stemStringInstance(beforeStemming);
           docBodyList.add(afterStemming);
-          if(!StopWordsList.isStopWord(afterStemming)){
-        	  if(docDictionary.containsKey(afterStemming)){        	
-                  docDictionary.put(afterStemming, docDictionary.get(afterStemming)+1);
-               }else{
-                  docDictionary.put(afterStemming, 1);
-               }
-          	}
+          afterStemming=afterStemming.trim();
+          if(!afterStemming.equals("")){
+        	  if(!StopWordsList.isStopWord(afterStemming)){
+            	  if(docDictionary.containsKey(afterStemming)){        	
+                      docDictionary.put(afterStemming, docDictionary.get(afterStemming)+1);
+                   }else{
+                      docDictionary.put(afterStemming, 1);
+                   }
+              	}
+          }      
          } else {
           docBodyList.add(String.valueOf(s_temp));
           if(docDictionary.containsKey(s_temp)){

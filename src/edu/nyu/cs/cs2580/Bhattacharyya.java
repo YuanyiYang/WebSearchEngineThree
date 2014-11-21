@@ -29,7 +29,7 @@ public class Bhattacharyya {
     String line;
     
     while ((line = br.readLine()) != null) {
-      String[] temp = line.split(".");
+      String[] temp = line.split(":");
       if (temp.length == 2) {
         QEFile.put(temp[0], temp[1]);        
       }
@@ -47,11 +47,23 @@ public class Bhattacharyya {
       Map<String, Float> terms = new HashMap<String, Float>();
       
       while ((line = br.readLine()) != null) {
-        Scanner s = new Scanner(line);
-        String term = s.next();
-        Float value = Float.parseFloat(s.next());
-        terms.put(term, value);
-        s.close();
+        StringBuilder sb = new StringBuilder();
+        if (line.charAt(0) == '<') {
+          int i = 1;
+          while (line.charAt(i) != '>') {
+            sb.append(line.charAt(i));
+            i ++;
+          }
+          String key = new String(sb);
+          sb.delete(0, sb.capacity());
+          i += 2;
+          while (line.charAt(i) != '>') {
+            sb.append(line.charAt(i));
+            i ++;
+          }
+          Float value = Float.parseFloat(new String(sb));
+          terms.put(key, value);
+        }
       }
       
       QEmap.put(query, terms);
@@ -66,9 +78,9 @@ public class Bhattacharyya {
     String[] terms = (String[]) QEmap.keySet().toArray();
     for (int i = 0; i < terms.length - 1; i++) {
       for (int j = i + 1; j < terms.length; j++) {
-        writer.write(terms[i] + '\t' + terms[j] + '\t');
+        writer.write("<" + terms[i] + "><" + terms[j] + "><");
         Float temp = computeSimilarity(QEmap.get(terms[i]), QEmap.get(terms[j]));
-        writer.write(temp.toString() + '\n');
+        writer.write(temp.toString() + ">\n");
       }
     }
     writer.close();

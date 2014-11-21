@@ -93,7 +93,7 @@ public class QueryRepresentation {
     
     StringBuilder result = new StringBuilder();
     for (String term: terms.keySet()) {
-      result.append(term + ' ' + terms.get(term).toString() + '\n');
+      result.append('<' + term + "><" + terms.get(term).toString() + ">\n");
     }
     return new String(result);
   }
@@ -183,5 +183,6 @@ public class QueryRepresentation {
                              int termNum) {
     this.results = results;
     this.termNum = termNum;
+    System.out.println("Rebuilding the query");
   }
 }

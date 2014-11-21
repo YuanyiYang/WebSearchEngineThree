@@ -180,7 +180,7 @@ class QueryHandler implements HttpHandler {
           // @CS2580: Plug in your HTML output
           break;
         default:
-          // nothing
+          // nothing	
         }
         respondWithMsg(exchange, response.toString());
         System.out.println("Finished query: " + cgiArgs._query);

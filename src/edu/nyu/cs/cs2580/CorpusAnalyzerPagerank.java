@@ -284,6 +284,10 @@ public class CorpusAnalyzerPagerank extends CorpusAnalyzer {
 
   // write the page rank value to the file
   public void writeToFile() throws IOException {
+	File file = new File(PR_FILE);
+	if(file.exists()){
+		file.delete();
+	}
     WriteToFile writer = new WriteToFile(PR_FILE);
     StringBuilder result = new StringBuilder();
     Integer size = pageIndex.keySet().size();

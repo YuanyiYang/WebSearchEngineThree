@@ -26,6 +26,7 @@ public class RankerPhrase extends Ranker {
     Map<String, Double> queryTerm = new HashMap<String, Double>();  //query term-->freq map
     Queue<ScoredDocument> rankQueue = new PriorityQueue<ScoredDocument>();
     Vector<ScoredDocument> results = new Vector<ScoredDocument>();
+    int numDocs = _indexer.numDocs();
     
     QueryPhrase qp = new QueryPhrase(query._query);
     
@@ -48,7 +49,13 @@ public class RankerPhrase extends Ranker {
     
     //the query contains only one word, use unigram
     if (queryTerm.keySet().size() == 1) {
-      
+      String term = "";
+      for (String s: queryTerm.keySet()) {
+        term = s;
+      }
+      for (int i = 1; i <= numDocs; i++) {
+        double score = _indexer.documentTermFrequency(term, i);
+      }
     } else { //use nextDoc to get the number of bigrams
       
     }
