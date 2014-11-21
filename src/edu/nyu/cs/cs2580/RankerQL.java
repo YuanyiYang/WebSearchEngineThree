@@ -1,6 +1,7 @@
 package edu.nyu.cs.cs2580;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
@@ -15,26 +16,27 @@ import java.util.Vector;
 import edu.nyu.cs.cs2580.QueryHandler.CgiArguments;
 import edu.nyu.cs.cs2580.SearchEngine.Options;
 
-public class RankerCosine extends Ranker {
-  
+public class RankerQL extends Ranker{
   static private final String docTermFreqFile = "";
   private static int numDocs;
-
-  public RankerCosine(Options options, CgiArguments arguments,
-      Indexer indexer) {
+  private double gamma = 0.5;
+  
+  public RankerQL(Options options, 
+                  CgiArguments arguments,
+                  Indexer indexer) {
     super(options, arguments, indexer);
-    numDocs = _indexer.numDocs();
     System.out.println("Using Ranker: " + this.getClass().getSimpleName());
   }
 
   @Override
-  public Vector<ScoredDocument> runQuery(Query query, int numResults) throws IOException {
-    _indexer.buildInvertMap(query);
+  public Vector<ScoredDocument> runQuery(Query query, int numResults)
+      throws FileNotFoundException, NumberFormatException, IOException {
     Map<String, Double> queryTerm = new HashMap<String, Double>();  //query term-->freq map
-    
     Queue<ScoredDocument> rankQueue = new PriorityQueue<ScoredDocument>();
     Vector<ScoredDocument> results = new Vector<ScoredDocument>();
+    
     QueryPhrase qp = new QueryPhrase(query._query);
+    double totalTF = _indexer.totalTermFrequency();
     
     for (String term: qp.getTokens()) {
       if (queryTerm.containsKey(term)) {
@@ -52,7 +54,7 @@ public class RankerCosine extends Ranker {
         }
       }
     }
-    
+
     //read the doc_term_freq file
     BufferedReader br;
     br = new BufferedReader(new FileReader(docTermFreqFile));
@@ -71,7 +73,13 @@ public class RankerCosine extends Ranker {
       
       //if the document contains the term in the query 
       if (checkIntersection(queryTerm.keySet(), docTerm.keySet())) {
-        double score = computeCosineSimilarity(queryTerm, docTerm);
+        double score = 0.0;
+        for (String term: queryTerm.keySet()) {
+          if (docTerm.containsKey(term)) {
+            score += gamma * docTerm.get(term) / _indexer.getDoc(docid).getTermFrequency()
+                  + (1.0 - gamma) * _indexer.corpusTermFrequency(term) / totalTF;
+          }
+        }
         ScoredDocument s_d = new ScoredDocument(_indexer.getDoc(docid), score); 
         s_d.setPageRank(_indexer.pageRankValueForDocID(docid));
         s_d.setNumview(_indexer.numviewForDocID(docid));
@@ -101,42 +109,5 @@ public class RankerCosine extends Ranker {
       }
     }
     return false;
-  }
-  
-  //compute the consine similarity between two documents
-  public double computeCosineSimilarity(Map<String, Double> queryTerm, Map<String, Double> docTerm) {
-    double up = 0.0, down_q = 0.0, down_d = 0.0;
-    
-    for (String term: queryTerm.keySet()) {
-      if (docTerm.keySet().contains(term)) {
-        double idf = getIdf(term);
-        up += idf * idf 
-              * queryTerm.get(term) 
-              * docTerm.get(term);
-      }
-    }
-    down_q = getSqrtSum(queryTerm);
-    down_d = getSqrtSum(docTerm);
-    
-    return up / (down_q * down_d);
-  }
-  
-  private double getSqrtSum(Map<String, Double> termFreq) {
-    double r = 0.0;
-    for (String term: termFreq.keySet()) {
-      double idf = getIdf(term);
-      r += idf * idf * termFreq.get(term) * termFreq.get(term);
-    }
-    return Math.sqrt(r);
-  }
-  
-  private double getIdf(String term) {
-    double df = (double)_indexer.corpusDocFrequencyByTerm(term);
-    
-    if (df == 0.0) {
-      return 0.0;
-    } else {
-      return Math.log((double)numDocs / df) / Math.log(2.0);      
-    }
   }
 }
