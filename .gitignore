@@ -1,6 +1,5 @@
 /bin
 /results
-*.tsv
 *.class
 .DS_Store
 /.settings
@@ -8,5 +7,6 @@
 *.tsv
 # Package Files #
 *.war
-typescript
+/parts
 *.ear
+.nfs00000000000062a5000000b5

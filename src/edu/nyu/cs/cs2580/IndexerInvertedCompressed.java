@@ -40,6 +40,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
   private final String PARTS = "/parts/";
   private final int PROCESSUNIT = 500;
   private final String FINALINDEX = "/data/index/final3.idx";
+  private final String DOCFILE = WORKINGDIR + "/data/index/documentCorpus";
 
   private long offsetForTerm = 0L;
 
@@ -305,8 +306,9 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
     int files_size = files.size();
     System.out.println("Total Document Size " + files_size);
 
+    WriteToFile docWriter = new WriteToFile(DOCFILE);
     for (int docId = 0; docId < files_size; docId++) {
-      buildOneDoc(files.get(docId), docId);
+      buildOneDoc(files.get(docId), docId, docWriter);
       if (docId != 0 && docId % 100 == 0) {
         // clear inverted map and write to file
         String fileName = WORKINGDIR + PARTS + "PartialIndexCompressed"
@@ -344,6 +346,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
         wr.closeBufferWriter();
       }
     }
+    docWriter.closeBufferWriter();
   }
 
   private void loadPageRankValue() {
@@ -397,7 +400,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
   /*
    * Construct the index from all files under the directory
    */
-  private void buildOneDoc(File file, int docId) {
+  private void buildOneDoc(File file, int docId, WriteToFile writerTermFeature) {
 
     String docTitle = null;
     String docBody = null;
@@ -474,6 +477,13 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
     document.setTermFrequency((float)docBodyList.size());
     _documents.add(document);
     Map<String, Integer> sortedDocDic = MapUtil.sortedByValue(docDictionary);
+    StringBuilder tempResult = new StringBuilder();
+    tempResult.append(docId).append(" ");
+    for(Map.Entry<String, Integer> entry : docDictionary.entrySet()){
+      tempResult.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ");
+    }
+    tempResult.append("\n");
+    writerTermFeature.appendToFile(tempResult.toString());
     Iterator<Map.Entry<String, Integer>> iterator = sortedDocDic.entrySet()
         .iterator();
     int i = 0;
