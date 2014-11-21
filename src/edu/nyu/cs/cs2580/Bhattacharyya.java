@@ -75,7 +75,7 @@ public class Bhattacharyya {
   public static void compute() throws IOException {
     OutputStreamWriter writer = 
         new OutputStreamWriter(new FileOutputStream(outputFile, false));
-    String[] terms = (String[]) QEmap.keySet().toArray();
+    String[] terms =  QEmap.keySet().toArray(new String[QEmap.keySet().size()]);
     for (int i = 0; i < terms.length - 1; i++) {
       for (int j = i + 1; j < terms.length; j++) {
         writer.write("<" + terms[i] + "><" + terms[j] + "><");
