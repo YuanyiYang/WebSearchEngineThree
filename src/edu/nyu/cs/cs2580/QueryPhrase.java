@@ -228,4 +228,9 @@ public class QueryPhrase extends Query {
       scanner.close();
     }
   }
+  
+  public static void main() {
+    String input = "";
+    
+  }
 }

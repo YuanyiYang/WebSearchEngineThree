@@ -75,17 +75,14 @@ public abstract class Ranker {
       case COMPREHENSIVE:
         return new RankerComprehensive(options, arguments, indexer);
       case COSINE:
-        // Plug in your cosine Ranker
-        break;
+        return new RankerCosine(options, arguments, indexer);
       case QL:
-        // Plug in your QL Ranker
-        break;
+        return new RankerQL(options, arguments, indexer);
       case PHRASE:
         // Plug in your phrase Ranker
         break;
       case LINEAR:
-        // Plug in your linear Ranker
-        break;
+        //return new RankerLinear(options, arguments, indexer);;
       case NONE:
         // Fall through intended
       default:
