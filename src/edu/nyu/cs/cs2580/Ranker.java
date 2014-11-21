@@ -1,5 +1,7 @@
 package edu.nyu.cs.cs2580;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Vector;
 
 import edu.nyu.cs.cs2580.QueryHandler.CgiArguments;
@@ -50,8 +52,11 @@ public abstract class Ranker {
    * @param query the parsed user query
    * @param numResults number of results to return
    * @return Up to {@code numResults} scored documents in ranked order
+   * @throws FileNotFoundException 
+   * @throws IOException 
+   * @throws NumberFormatException 
    */
-  public abstract Vector<ScoredDocument> runQuery(Query query, int numResults);
+  public abstract Vector<ScoredDocument> runQuery(Query query, int numResults) throws FileNotFoundException, NumberFormatException, IOException;
 
   /**
    * All Rankers must be created through this factory class based on the
