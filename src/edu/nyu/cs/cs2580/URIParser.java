@@ -25,6 +25,7 @@ public class URIParser {
     return result;
   }
 
+  
   public static String normalizeURL(String str) {
     String temp = null;
     try {
@@ -32,7 +33,8 @@ public class URIParser {
     } catch (Exception e) {
 
     }
-    if(temp==null) return "";
+    if (temp == null)
+      return "";
     int beginIndex = 0;
     int endIndex = temp.length();
     int hashIndex = temp.indexOf('#');
@@ -63,11 +65,11 @@ public class URIParser {
     if (pathIndex == -1) {
       return temp;
     } else {
-      Pattern p = Pattern.compile("[^ /]*/([^ /]*)$");
-      Matcher matcher = p.matcher(temp.substring(pathIndex));
-      if (matcher.find()) {
-        temp = matcher.group(1);
-      }
+      //Pattern p = Pattern.compile("[^ /]*/([^ /]*)$");
+      //Matcher matcher = p.matcher(temp.substring(pathIndex));
+      //if (matcher.find()) {
+      //  temp = matcher.group(1);
+      //}
       return temp;
     }
   }

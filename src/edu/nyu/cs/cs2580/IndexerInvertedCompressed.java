@@ -494,7 +494,7 @@ public class IndexerInvertedCompressed extends Indexer implements Serializable {
     Iterator<Map.Entry<String, Integer>> iterator = sortedDocDic.entrySet()
         .iterator();
     int i = 0;
-    while (i < 30 && iterator.hasNext()) {
+    while (i < 100 && iterator.hasNext()) {
       Map.Entry<String, Integer> entry = iterator.next();
       document.addTermFrequence(entry.getKey(), entry.getValue());
       i++;

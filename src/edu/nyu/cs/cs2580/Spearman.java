@@ -37,7 +37,7 @@ public class Spearman {
             if (o1.getValue() < o2.getValue()) {
               return 1;
             } else if (o1.getValue() == o2.getValue()) {
-              return 0;
+              return o1.getKey().compareTo(o2.getKey());
             } else {
               return -1;
             }
@@ -51,14 +51,14 @@ public class Spearman {
             if (o1.getValue() > o2.getValue()) {
               return -1;
             } else if (o1.getValue() == o2.getValue()) {
-              return 0;
+              return o1.getKey().compareTo(o2.getKey());
             } else {
               return 1;
             }
           }
         });
     int ranking = 1;
-    for(String key : num_view.keySet()){
+    for (String key : num_view.keySet()) {
       num_ranking.put(key, ranking);
       ranking++;
     }
@@ -107,19 +107,20 @@ public class Spearman {
 
   // compute the similarity
   public void computeSim() {
-    float z = ((float)(pr_rank.size() + 1)) / 2;
+    float z = ((float) (pr_rank.size() + 1)) / 2;
     float up = 0.0f, xdown = 0.0f, ydown = 0.0f;
     float ranking = 1;
-    for(String key : pr_rank.keySet()){
+    for (String key : pr_rank.keySet()) {
       float x = ranking;
-      float y = (float)num_ranking.get(key);
+      float y = (float) num_ranking.get(key);
       up += (x - z) * (y - z);
       xdown += (x - z) * (x - z);
       ydown += (y - z) * (y - z);
       ranking++;
     }
-    similarity = up / (xdown * ydown);
-    System.out.println(similarity);
+
+    similarity = up / (float) Math.sqrt(xdown * ydown);
+    System.out.format("%.5f", similarity);
   }
 
   public static void main(String[] args) {
