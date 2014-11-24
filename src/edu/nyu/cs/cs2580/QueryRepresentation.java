@@ -95,8 +95,9 @@ public class QueryRepresentation {
     normalize(terms);
 
     StringBuilder result = new StringBuilder();
-    for (String term : terms.keySet()) {
-      result.append(term + ' ' + terms.get(term).toString() + '\n');
+
+    for (String term: terms.keySet()) {
+      result.append('<' + term + "><" + terms.get(term).toString() + ">\n");
     }
     return new String(result);
   }

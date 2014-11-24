@@ -153,7 +153,7 @@ public abstract class Indexer {
     }
   }
   // decide whether a character is a letter or number
-  public boolean isCharacterNumber(char c) {
+  public static boolean isCharacterNumber(char c) {
     if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
         || (c >= '0' && c <= '9')) {
       return true;
@@ -173,7 +173,7 @@ public abstract class Indexer {
   }
 
   // tokenizer for the input string
-  public Vector<String> Tokenization(String s) {
+  public static Vector<String> Tokenization(String s) {
     Vector<String> r = new Vector<String>();
     if (s.length() == 0) {
       return r;

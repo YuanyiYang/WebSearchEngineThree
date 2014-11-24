@@ -4,7 +4,7 @@ while read q ; do
 i=$((i+1));
 echo $i
 prfout=prf-$i.tsv;
-curl "http://localhost:25802/prf?query=$q&ranker=comprehensive&numdocs=10&numterms=5" > $prfout
-echo $q
+curl "http://localhost:25802/prf?query=$q&ranker=comprehensive&numdocs=10&numterms=10" > $prfout
 echo $q:$prfout >> prf.tsv
 done < queries.tsv
+java -cp lib/*:bin edu.nyu.cs.cs2580.Bhattacharyya prf.tsv qsim.tsv

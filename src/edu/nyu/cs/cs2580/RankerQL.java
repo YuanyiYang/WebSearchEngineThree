@@ -32,7 +32,7 @@ public class RankerQL extends Ranker{
   @Override
   public Vector<ScoredDocument> runQuery(Query query, int numResults)
       throws FileNotFoundException, NumberFormatException, IOException {
-	  _indexer.buildInvertMap(query);
+    _indexer.buildInvertMap(query);
     Map<String, Double> queryTerm = new HashMap<String, Double>();  //query term-->freq map
     Queue<ScoredDocument> rankQueue = new PriorityQueue<ScoredDocument>();
     Vector<ScoredDocument> results = new Vector<ScoredDocument>();
