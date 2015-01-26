@@ -1,0 +1,46 @@
+body {
+    background-color: white;
+    margin: 5em;
+}
+h1 {
+    color: maroon;
+    text-align: center;
+}
+#search-div {
+  text-align: center;
+  width: 40em;
+}
+input.search-bar {
+  height: 1.5em;
+  width: 100%;
+  font-size: large;
+}
+
+.center {
+    margin-left: auto;
+    margin-right: auto;
+    width: 40em;
+}
+
+#search {
+  position: center;
+  margin-left: 20em;
+  margin-right: auto;
+  margin-top: auto;
+  height:4em;
+  width:8em;
+}
+
+#search-div.header {
+  position: absolute;
+  left: 0;
+  top: 0;
+  text-align: left;
+  width: 100%;
+  background: #f1f1f1;
+}
+
+.header #tags {
+  width: 40em;
+  margin: 12px 20px;
+}

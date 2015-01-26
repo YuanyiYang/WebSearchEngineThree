@@ -13,36 +13,31 @@ import com.sun.net.httpserver.HttpServer;
 
 /**
  * This is the main entry class for the Search Engine.
- *
- * Usage (must be running from the parent directory of src):
- *  0) Compiling
- *   javac src/edu/nyu/cs/cs2580/*.java
- *  1) Mining
- *   java -cp src edu.nyu.cs.cs2580.SearchEngine \
- *     --mode=mining --options=conf/engine.conf
- *  2) Indexing
- *   java -cp src edu.nyu.cs.cs2580.SearchEngine \
- *     --mode=index --options=conf/engine.conf
- *  3) Serving
- *   java -cp src -Xmx256m edu.nyu.cs.cs2580.SearchEngine \
- *     --mode=serve --port=[port] --options=conf/engine.conf
- *  4) Searching
- *   http://localhost:[port]/search?query=web&ranker=fullscan
- *
- * @CS2580:
- * You must ensure your program runs with maximum heap memory size -Xmx512m.
- * You must use a port number 258XX, where XX is your group number.
- *
- * Students do not need to change this class except to add server options.
- *
+ * 
+ * Usage (must be running from the parent directory of src): 0) Compiling javac
+ * src/edu/nyu/cs/cs2580/*.java 1) Mining java -cp src
+ * edu.nyu.cs.cs2580.SearchEngine \ --mode=mining --options=conf/engine.conf 2)
+ * Indexing java -cp src edu.nyu.cs.cs2580.SearchEngine \ --mode=index
+ * --options=conf/engine.conf 3) Serving java -cp src -Xmx256m
+ * edu.nyu.cs.cs2580.SearchEngine \ --mode=serve --port=[port]
+ * --options=conf/engine.conf 4) Searching
+ * http://localhost:[port]/search?query=web&ranker=fullscan
+ * 
+ * @CS2580: You must ensure your program runs with maximum heap memory size
+ *          -Xmx512m. You must use a port number 258XX, where XX is your group
+ *          number.
+ * 
+ *          Students do not need to change this class except to add server
+ *          options.
+ * 
  * @author congyu
  * @author fdiaz
  */
 public class SearchEngine {
 
   /**
-   * Stores all the options and configurations used in our search engine.
-   * For simplicity, all options are publicly accessible.
+   * Stores all the options and configurations used in our search engine. For
+   * simplicity, all options are publicly accessible.
    */
   public static class Options {
     // The parent path where the corpus resides.
@@ -73,7 +68,9 @@ public class SearchEngine {
 
     /**
      * Constructor for options.
-     * @param optionFile where all the options must reside
+     * 
+     * @param optionFile
+     *          where all the options must reside
      * @throws IOException
      */
     public Options(String optionsFile) throws IOException {
@@ -115,6 +112,7 @@ public class SearchEngine {
       Check(_logMinerType != null, "Missing option: log_miner_type!");
     }
   }
+
   public static Options OPTIONS = null;
 
   /**
@@ -131,17 +129,15 @@ public class SearchEngine {
    * Running mode of the search engine.
    */
   public static enum Mode {
-    NONE,
-    MINING,
-    INDEX,
-    SERVE,
+    NONE, MINING, INDEX, SERVE,
   };
+
   public static Mode MODE = Mode.NONE;
 
   public static int PORT = -1;
 
-  private static void parseCommandLine(String[] args)
-      throws IOException, NumberFormatException {
+  private static void parseCommandLine(String[] args) throws IOException,
+      NumberFormatException {
     for (String arg : args) {
       String[] vals = arg.split("=", 2);
       String key = vals[0].trim();
@@ -165,49 +161,53 @@ public class SearchEngine {
     Check(OPTIONS != null, "Must provide options!");
   }
 
-  ///// Main functionalities start
+  // /// Main functionalities start
 
-  private static void startMining()
-      throws IOException, NoSuchAlgorithmException {
-    CorpusAnalyzer analyzer = CorpusAnalyzer.Factory.getCorpusAnalyzerByOption(
-        SearchEngine.OPTIONS);
-    Check(analyzer != null,
-        "Analyzer " + SearchEngine.OPTIONS._corpusAnalyzerType + " not found!");
+  private static void startMining() throws IOException,
+      NoSuchAlgorithmException {
+    CorpusAnalyzer analyzer = CorpusAnalyzer.Factory
+        .getCorpusAnalyzerByOption(SearchEngine.OPTIONS);
+    Check(analyzer != null, "Analyzer "
+        + SearchEngine.OPTIONS._corpusAnalyzerType + " not found!");
     analyzer.prepare();
     analyzer.compute();
 
     LogMiner miner = LogMiner.Factory.getLogMinerByOption(SearchEngine.OPTIONS);
-    Check(miner != null,
-        "Miner " + SearchEngine.OPTIONS._logMinerType + " not found!");
+    Check(miner != null, "Miner " + SearchEngine.OPTIONS._logMinerType
+        + " not found!");
     miner.compute();
     return;
   }
-  
+
   private static void startIndexing() throws IOException {
     Indexer indexer = Indexer.Factory.getIndexerByOption(SearchEngine.OPTIONS);
-    Check(indexer != null,
-        "Indexer " + SearchEngine.OPTIONS._indexerType + " not found!");
+    Check(indexer != null, "Indexer " + SearchEngine.OPTIONS._indexerType
+        + " not found!");
     indexer.constructIndex();
   }
-  
+
   private static void startServing() throws IOException, ClassNotFoundException {
     // Create the handler and its associated indexer.
     Indexer indexer = Indexer.Factory.getIndexerByOption(SearchEngine.OPTIONS);
-    Check(indexer != null,
-        "Indexer " + SearchEngine.OPTIONS._indexerType + " not found!");
+    Check(indexer != null, "Indexer " + SearchEngine.OPTIONS._indexerType
+        + " not found!");
     indexer.loadIndex();
     QueryHandler handler = new QueryHandler(SearchEngine.OPTIONS, indexer);
-
+    MainpageHandler indexHander = new MainpageHandler();
+    MWebHandler webFileHandler = new MWebHandler();
     // Establish the serving environment
     InetSocketAddress addr = new InetSocketAddress(SearchEngine.PORT);
     HttpServer server = HttpServer.create(addr, -1);
+
     server.createContext("/", handler);
+    server.createContext("/index", indexHander);
+    server.createContext("/web", webFileHandler);
     server.setExecutor(Executors.newCachedThreadPool());
     server.start();
-    System.out.println(
-        "Listening on port: " + Integer.toString(SearchEngine.PORT));
+    System.out.println("Listening on port: "
+        + Integer.toString(SearchEngine.PORT));
   }
-  
+
   public static void main(String[] args) {
     try {
       SearchEngine.parseCommandLine(args);

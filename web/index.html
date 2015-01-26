@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Search Engine</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="web/searchEngine.css">
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+  <script>
+    /*
+   * jQuery UI Autocomplete HTML Extension
+   *
+   * Copyright 2010, Scott González (http://scottgonzalez.com)
+   * Dual licensed under the MIT or GPL Version 2 licenses.
+   *
+   * http://github.com/scottgonzalez/jquery-ui-extensions
+   */
+  (function( $ ) {
+  var proto = $.ui.autocomplete.prototype,
+    initSource = proto._initSource;
+  function filter( array, term ) {
+    var matcher = new RegExp( $.ui.autocomplete.escapeRegex(term), "i" );
+    return $.grep( array, function(value) {
+      return matcher.test( $( "<div>" ).html( value.label || value.value || value ).text() );
+    });
+  }
+  $.extend( proto, {
+    _initSource: function() {
+      if ( this.options.html && $.isArray(this.options.source) ) {
+        this.source = function( request, response ) {
+          response( filter( this.options.source, request.term ) );
+        };
+      } else {
+        initSource.call( this );
+      }
+    },
+    _renderItem: function( ul, item) {
+      return $( "<li></li>" )
+        .data( "item.autocomplete", item )
+        .append( $( "<a></a>" )[ this.options.html ? "html" : "text" ]( item.label ) )
+        .appendTo( ul );
+    }
+  });
+  })( jQuery );
+  
+  $(function() {
+    $("#submit").click(function() {
+      var query = $("#tags").val();
+      var url = '/search?query=' + escape(query) + '&ranker=comprehensive&format=html';
+      window.location.assign(url);
+    });
+    
+    $( "#tags" ).autocomplete({
+        source: [],
+        html: true
+      });
+      $("#tags").keypress(function(event) {
+        if (!$("#tags").val()) {
+        $("#logo").hide();
+        $("#search-div").removeClass("center").addClass("header");
+        }
+    });
+    $("#tags").keydown(function(event) {
+             if (event.keyCode == "13") {
+                 $("#submit").click();
+             }
+         });
+    $("#tags").keyup(function() {
+      var prefix = $("#tags").val();
+      $.ajax(
+        "/lookup",
+        {
+          type: "POST",
+          data: {pre: prefix},
+        }
+      ).done(function(data) {
+        var src = [];
+        for (var i=0;i<data.result.length;i++) {
+          var color = i<data.prev_count ? "#7a77c8" : "black"
+          src[i] = {
+            label: "<span style='color:" + color + "'>" + data.result[i] + "</span>",
+            value: data.result[i]     
+          };
+        }
+        
+        $( "#tags" ).autocomplete("option", "source", src);
+      });
+    });
+    
+  });
+  
+  
+  </script>
+</head>
+
+<body>
+<div class="center">
+  <img id="logo" class="center" src="http://www.softwaysolutions.com/images/SearchEngineLogo.jpg" alt="logo" height="300px" width="500px">
+</div>
+<div id="search-div" class="center">
+  <input type="text" id="tags" class="search-bar" name="query"></input>
+  <br/>
+  <br/>
+  <input type="button" id="submit" value="Search"></input>
+</div>
+ 
+</body>
+</html>

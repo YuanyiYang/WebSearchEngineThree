@@ -124,6 +124,11 @@ class QueryHandler implements HttpHandler {
     response.append(response.length() > 0 ? "\n" : "");
   }
 
+  private void constructHtmlOutput(final Vector<ScoredDocument> docs,
+      StringBuffer response){
+    
+  }
+  
   public void handle(HttpExchange exchange) throws IOException {
     String requestMethod = exchange.getRequestMethod();
     if (!requestMethod.equalsIgnoreCase("GET")) { // GET requests only.
@@ -178,6 +183,7 @@ class QueryHandler implements HttpHandler {
           break;
         case HTML:
           // @CS2580: Plug in your HTML output
+          constructTextOutput(scoredDocs, response);
           break;
         default:
           // nothing	
